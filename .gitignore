@@ -1,0 +1,54 @@
+# Root .gitignore for Grievance Portal Project
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary folders
+tmp/
+temp/
+
+# Environment variables (project-wide)
+.env
+.env.local
+.env.production
+.env.test
+
+# Build directories (from any subproject)
+build/
+dist/
+.next/
+.nuxt/
+
+# Coverage reports
+coverage/
+
+# Dependency directories will be handled by individual project .gitignore files
+# but adding common ones here as backup
+node_modules/
+bower_components/
