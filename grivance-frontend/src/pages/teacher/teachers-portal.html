@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Grievance Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A simple fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Custom style for the active sidebar link */
+        .sidebar-link.active {
+            background-color: #2563EB; /* A darker blue, or white/30 */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <div id="toast-notification" class="hidden fixed top-5 right-5 z-50 bg-green-500 text-white py-3 px-6 rounded-lg shadow-xl transition-all duration-300 transform opacity-0 -translate-y-10">
+        <span id="toast-message"></span>
+    </div>
+
+    <div class="flex h-screen">
+        <nav class="w-64 bg-blue-600 text-white flex flex-col shadow-2xl">
+            <div class="p-6 flex items-center gap-3 border-b border-blue-500">
+                <svg class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.793a48.36 48.36 0 00-6.75 0.539V21" />
+                </svg>
+                <span class="text-xl font-bold">Teacher Portal</span>
+            </div>
+            
+            <ul class="flex-1 p-4 space-y-2">
+                <li>
+                    <a href="#inbox" class="sidebar-link active flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="inbox-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.12-1.58H6.88a2.25 2.25 0 00-2.12 1.58L2.35 13.177a2.25 2.25 0 00-.1.661z" />
+                        </svg>
+                        <span>Grievance Inbox</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#submit" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="submit-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                        <span>Submit Grievance</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#track-complaint" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="track-complaint-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        <span>Track Your Complaint</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#hod-feedback" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="hod-feedback-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                        </svg>
+                        <span>HOD's Feedback</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#about-us" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="about-us-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 00-3.008-5.414l-2.66-2.662a9.094 9.094 0 00-5.414-3.008l-2.662-2.66m.062 16.5a9.094 9.094 0 01-1.636-3.008L2.98 13.065a9.094 9.094 0 01-3.008-5.414L-1.39 5.03l2.66-2.662a9.094 9.094 0 015.414-3.008l2.662-2.66 2.662 2.66a9.094 9.094 0 013.008 5.414l2.66 2.662a9.094 9.094 0 013.008 5.414l2.66 2.662a9.094 9.094 0 01-5.414 3.008l-2.662 2.66-2.66-2.661a9.094 9.094 0 00-3.008-5.414z" />
+                        </svg>
+                        <span>About Us</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#about-college" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="about-college-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.793a48.36 48.36 0 00-6.75 0.539V21" />
+                        </svg>
+                        <span>About College</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="p-4 border-t border-blue-500">
+                <a href="index.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+            
+            <h1 class="text-3xl font-bold text-gray-900 mb-8 fade-in">Welcome, <span data-user="name" class="teacher-name"> </span> Teacher!</h1>
+
+            <div>
+                <div id="inbox-content" class="content-panel fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Student Grievance Inbox</h2>
+                    <div class="space-y-4">
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex-1 min-w-[200px]">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">Academic</span>
+                                    <span class="text-gray-500 text-sm">From: S12345 (John Doe)</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900">Request for Re-evaluation of Exam</h3>
+                                <p class="text-gray-600 text-sm mt-1">There seems to be a mistake in the total marks for my "Advanced Physics" paper. I kindly request a re-evaluation...</p>
+                            </div>
+                            <div class="action-buttons flex gap-3">
+                                <button onclick="handleGrievance(this, 'approved')" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
+                                <button onclick="handleGrievance(this, 'denied')" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Deny</button>
+                            </div>
+                        </div>
+
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex-1 min-w-[200px]">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">Infrastructure</span>
+                                    <span class="text-gray-500 text-sm">From: S56789 (Jane Smith)</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900">Broken Projector in Room 301</h3>
+                                <p class="text-gray-600 text-sm mt-1">The projector in Room 301 has not been working for three days, which is affecting our presentations...</p>
+                            </div>
+                            <div class="action-buttons flex gap-3">
+                                <button onclick="handleGrievance(this, 'approved')" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
+                                <button onclick="handleGrievance(this, 'denied')" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Deny</button>
+                            </div>
+                        </div>
+
+                        <div class="grievance-card bg-gray-50 p-5 rounded-xl shadow-lg flex flex-wrap items-center justify-between gap-4 opacity-70">
+                            <div class="flex-1 min-w-[200px]">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">Other</span>
+                                    <span class="text-gray-500 text-sm">From: S00123 (Mike Lee)</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900">Request for Timetable Change</h3>
+                                <p class="text-gray-600 text-sm mt-1">My elective class clashes with a core subject. Requesting a possible adjustment...</p>
+                            </div>
+                            <div class="action-buttons">
+                                <span class="px-4 py-2 bg-green-200 text-green-800 rounded-full text-sm font-bold">Forwarded to HOD</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="submit-content" class="content-panel hidden fade-in">
+                    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-2xl mx-auto">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-6">Submit Your Grievance</h2>
+                        <form id="teacher-grievance-form">
+                            <div class="mb-4">
+                                <label for="grievance-category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <select id="grievance-category" name="grievance-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                                    <option>Workload</option>
+                                    <option>Infrastructure (Faculty Room)</option>
+                                    <option>Administrative</option>
+                                    <option>Inter-departmental</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="grievance-subject" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                <input type="text" id="grievance-subject" name="grievance-subject" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="A brief summary of your concern">
+                            </div>
+                            <div class="mb-6">
+                                <label for="grievance-description" class="block text-sm font-medium text-gray-700 mb-2">Detailed Description</label>
+                                <textarea id="grievance-description" name="grievance-description" rows="6" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Please describe the issue in detail..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-lg hover:shadow-none">
+                                Submit Grievance
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div id="track-complaint-content" class="content-panel hidden fade-in">
+                    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-4xl mx-auto"> <h2 class="text-2xl font-semibold text-gray-800 mb-6">Track Your Complaint</h2>
+                        <div class="space-y-4">
+                            <div id="empty-tracking-message" class="text-center text-gray-500 py-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0l.621 6.21m15.258-6.21l-.621 6.21m-14.016 0h12.774" />
+                                </svg>
+                                <p class="mt-2 text-lg">You have not submitted any grievances yet.</p>
+                                <p class="text-sm">When you submit a grievance, you can track its status here.</p>
+                            </div>
+
+                            <div id="grievance-tracking-list" class="space-y-4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="hod-feedback-content" class="content-panel hidden fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">HOD's Feedback</h2>
+                    <p class="text-gray-600 mb-6">This section shows grievances that you approved, but were declined by the HOD. Please review the feedback and take appropriate action.</p>
+                    <div class="space-y-4">
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                                <div class="flex-1 min-w-[200px]">
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">Academic</span>
+                                        <span class="text-gray-500 text-sm">From: S12345 (John Doe)</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">Request for Re-evaluation of Exam</h3>
+                                    <p class="text-gray-600 text-sm mt-1">There seems to be a mistake in the total marks for my "Advanced Physics" paper...</p>
+                                </div>
+                                <div class="action-buttons">
+                                    <span class="px-4 py-2 bg-red-200 text-red-800 rounded-full text-sm font-bold">Declined by HOD</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 rounded-md">
+                                <h4 class="font-bold mb-1">HOD's Feedback:</h4>
+                                <p class="text-sm">"This request is incomplete. The student must attach a copy of their answer sheet as per policy. Please inform the student to resubmit with the required documents. Denied for now."</p>
+                            </div>
+                            
+                            <div class="flex justify-end mt-4">
+                                <button onclick="acknowledgeFeedback(this)" class="bg-blue-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-blue-600 transition-all shadow-md">Acknowledge</button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div id="about-us-content" class="content-panel hidden fade-in">
+                    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-3xl mx-auto">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-6">About Us</h2>
+                        <div class="space-y-6 text-gray-700">
+                            
+                            <p>This Grievance and Redressal Portal is a dedicated initiative developed to ensure a fair, transparent, and timely resolution process for all members of our college community. Our team is committed to upholding these values through a platform that is accessible and efficient for both students and staff.</p>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-3">Our Mission</h3>
+                                <p>Our mission is to foster a safe, positive, and inclusive college environment by providing a secure and confidential platform for voicing concerns. We strive to address every grievance with empathy, integrity, and a steadfast commitment to a constructive resolution.</p>
+                            </div>
+                
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-3">Developed By</h3>
+                                <ul class="list-disc list-inside">
+                                    <li>Nirbhav Kiran Bhale</li>
+                                    <li>Vaibhav Milind Rane</li>
+                                    <li>Smit Harshal Patil</li>
+                                </ul>
+                            </div>
+                
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Connect with the Developers</h3>
+                                <div class="space-y-6">
+                                    
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-800 mb-2">Nirbhav Kiran Bhale:</h4>
+                                        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                                            <a href="https://www.linkedin.com/in/nirbhavbhale" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="16" height="16" alt="LinkedIn">
+                                                <span>LinkedIn</span>
+                                            </a>
+                                            <a href="https://www.instagram.com/nirbhav.bhale?igsh=MTY2ZGhmOXJ0M3RtNw==" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="16" height="16" alt="Instagram">
+                                                <span>Instagram</span>
+                                            </a>
+                                            <a href="https://x.com/BhaleNirbhav?t=2YImBLoRH-PLicWmAHcvCg&s=09" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/5969/5969020.png" width="16" height="16" alt="X">
+                                                <span>X</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-800 mb-2">Vaibhav Milind Rane:</h4>
+                                        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                                            <a href="https://www.linkedin.com/in/vaibhav-rane-611b4b395?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="16" height="16" alt="LinkedIn">
+                                                <span>LinkedIn</span>
+                                            </a>
+                                            <a href="https://www.instagram.com/v.a.i.b.h.a.v_12?igsh=MnFiZHZxdXM4N21n" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="16" height="16" alt="Instagram">
+                                                <span>Instagram</span>
+                                            </a>
+                                            <a href="https://x.com/Vaibhav94552551?t=JDJeqQvT6A700pCEx9TJIg&s=08" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/5969/5969020.png" width="16" height="16" alt="X">
+                                                <span>X</span>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-800 mb-2">Smit Harshal Patil:</h4>
+                                        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+                                            <a href="https://www.linkedin.com/in/smit-patil-a25270266?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="16" height="16" alt="LinkedIn">
+                                                <span>LinkedIn</span>
+                                            </a>
+                                            <a href="https://www.instagram.com/smit_patil10?utm_source=qr&igsh=MW1qZnFsNXM5MnFyYQ==" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="16" height="16" alt="Instagram">
+                                                <span>Instagram</span>
+                                            </a>
+                                            <a href="https://x.com/Smitpatil7?t=m5TGQ-A2KpYqRwAuRDCUxQ&s=08" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                                <img src="https://cdn-icons-png.flaticon.com/512/5969/5969020.png" width="16" height="16" alt="X">
+                                                <span>X</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="about-college-content" class="content-panel hidden fade-in">
+                    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-3xl mx-auto">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-6">About Our College</h2>
+                        <div class="space-y-6 text-gray-700">
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-3">Our History</h3>
+                                <p>Founded in 1960 at Elphinstone Technical School, Government Polytechnic, Mumbai (GPM) is one of the oldest and most prestigious diploma engineering colleges in Maharashtra. This institute relocated to its present campus in Bandra in 1985 and was awarded academic autonomy in 1990. For decades, GPM has been a cornerstone of higher technical education, pioneering capacity and quality improvements through significant initiatives, including the World Bank Assisted Projects (1990–1998) and the Canada India Industry Polytechnic Linkage Project (2002).</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-3">Vision & Values</h3>
+                                <p class="mb-4">Our vision is guided by our motto: "Transform Knowledge into Work." We strive to be a leading academically autonomous institute, committed to developing competent, industry-ready technicians and fostering sustainable development through continuous improvement in our curriculum. We maintain strong liaison with industries and implement an outcome-based curriculum that includes mandatory six-month in-plant training for all students.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Core Values:</h4>
+                                <ul class="list-disc list-inside space-y-2">
+                                    <li><strong>Excellence:</strong> Upholding high academic standards as an autonomous, government-supported body.</li>
+                                    <li><strong>Innovation:</strong> Implementing modern curricula and encouraging project-based learning using the latest tools and technologies.</li>
+                                    <li><strong>Industry-Readiness:</strong> Focusing on practical skills and hands-on experience through the sandwich-pattern diploma programs.</li>
+                                    <li><strong>Inclusivity:</strong> Dedicated to community development and bringing Persons With Disabilities (PWD) into the mainstream of technical education.</li>
+                                    <li><strong>Autonomy:</strong> Utilizing self-governance to continuously adapt and keep pace with emerging technologies.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script type="module" src="./teachers-portal.js"></script>
+</body>
+</html>

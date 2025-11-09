@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Grievance Portal</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A simple fade-in animation (same as register page) */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Custom class for the clickable role cards */
+        .role-card {
+            @apply block w-full p-6 bg-white border border-gray-200 rounded-xl shadow-lg 
+                   hover:shadow-xl hover:border-blue-500 hover:scale-105 
+                   transition-all duration-300 cursor-pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <!-- Changed h-screen to min-h-screen to allow content to grow -->
+    <div class="flex flex-col md:flex-row min-h-screen">
+
+        <!-- Left Side: Welcome / Branding (Matches the right side of register page) -->
+        <div class="w-full md:w-1/2 bg-blue-600 flex items-center justify-center p-8 lg:p-12 text-white relative overflow-hidden">
+            <div class="w-full max-w-lg text-center fade-in">
+                
+                <!-- **** BOLD WELCOME MESSAGE **** -->
+                <h1 class="text-5xl lg:text-6xl font-bold mb-6">
+                    Welcome to our Portal
+                </h1>
+                
+                <p class="text-xl lg:text-2xl mb-8 opacity-90">
+                    Your voice matters. We are here to listen and help.
+                </p>
+
+                <!-- Re-using the abstract graphic from the register page for consistency -->
+                <div class="w-full max-w-sm mx-auto opacity-30">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                      <path fill="#FFFFFF" d="M46.7,-64.3C59.9,-53.8,69.7,-38.7,73.6,-22C77.4,-5.4,75.3,12.8,67.6,27.1C60,41.4,46.8,51.8,32.3,60.8C17.7,69.7,1.8,77.2,-14.8,77.7C-31.4,78.2,-48.7,71.7,-59.9,60C-71,48.2,-76,31.2,-77.2,14C-78.4,-3.2,-75.7,-20.6,-66.9,-33.9C-58.2,-47.2,-43.3,-56.4,-28.9,-65.4C-14.6,-74.5,-0.7,-83.4,13.7,-83.9C28.1,-84.4,43,-76.3,46.7,-64.3Z" transform="translate(100 100)" />
+                      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#000000" font-size="16" font-family="Arial, sans-serif" font-weight="bold">
+                        <tspan x="50%" dy="-1.2em">Voice Your Concerns.</tspan>
+                        <tspan x="50%" dy="1.2em">Find Your Solution.</tspan>
+                      </text>
+                    </svg>
+                </div>
+            </div>
+            <!-- Decorative shapes (same as register page) -->
+            <div class="absolute -bottom-16 -left-16 w-32 h-32 bg-white/20 rounded-full"></div>
+            <div class="absolute -top-16 -right-16 w-48 h-48 bg-white/20 rounded-lg transform rotate-45"></div>
+        </div>
+
+        <!-- Right Side: "Who are you?" Section -->
+        <div class="w-full md:w-1/2 flex items-center justify-center p-8 lg:p-12 fade-in">
+            <div class="w-full max-w-md">
+                
+                <!-- Card container (Matches the left side of register page) -->
+                <!-- Reduced vertical padding slightly to accommodate more cards -->
+                <div class="bg-white p-8 lg:p-10 rounded-xl shadow-2xl">
+                    
+                    <!-- **** "WHO ARE YOU?" SECTION **** -->
+                    <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">
+                        Who are you?
+                    </h2>
+
+                    <!-- Role Selection Options -->
+                    <!-- Reduced gap to fit more options comfortably -->
+                    <div class="flex flex-col gap-4">
+
+                        <!-- Option 1: Student -->
+                        <a href="login.html" class="role-card">
+                            <div class="flex items-center gap-5">
+                                <!-- Student Icon -->
+                                <div class="flex-shrink-0 w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A1.5 1.5 0 0118 21.75H6a1.5 1.5 0 01-1.499-1.632z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Student</h3>
+                                    <p class="text-sm text-gray-600">Submit a grievance or check status.</p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Option 2: Teachers (Was Authority) -->
+                        <a href="teacher_login.html" class="role-card"> <!-- Changed href -->
+                            <div class="flex items-center gap-5">
+                                <!-- Teacher Icon (Academic Cap) -->
+                                <div class="flex-shrink-0 w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Teachers</h3> <!-- Changed text -->
+                                    <p class="text-sm text-gray-600">View and respond to grievances.</p> <!-- Changed text -->
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- **** NEW SECTION: HOD **** -->
+                        <!-- Option 3: HOD -->
+                        <a href="hod_login.html" class="role-card">
+                            <div class="flex items-center gap-5">
+                                <!-- HOD Icon (Briefcase) -->
+                                <div class="flex-shrink-0 w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.07a2.25 2.25 0 01-2.25 2.25H5.625a2.25 2.25 0 01-2.25-2.25v-4.07m16.5 0v-3.875a2.25 2.25 0 00-2.25-2.25H5.625a2.25 2.25 0 00-2.25 2.25v3.875m16.5 0M20.25 14.15v-3.875a2.25 2.25 0 00-2.25-2.25H5.625a2.25 2.25 0 00-2.25 2.25v3.875m16.5 0v-3.875H3.75" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-800">HOD</h3>
+                                    <p class="text-sm text-gray-600">Oversee department grievances.</p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- **** NEW SECTION: Principal **** -->
+                        <!-- Option 4: Principal -->
+                        <a href="principal_login.html" class="role-card">
+                            <div class="flex items-center gap-5">
+                                <!-- Principal Icon (College Building) -->
+                                <div class="flex-shrink-0 w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.793a48.36 48.36 0 00-6.75 0.539V21" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Principal</h3>
+                                    <p class="text-sm text-gray-600">Review escalated grievances.</p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Option 5: Admin (Was Option 3) -->
+                        <a href="admin_login.html" class="role-card">
+                            <div class="flex items-center gap-5">
+                                <!-- Admin Icon -->
+                                <div class="flex-shrink-0 w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.39.44 1.02.12 1.45l-.527.737c-.25.35-.272.806-.108 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.11v1.093c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.108 1.204l.527.738c.32.43.27.96-.12 1.45l-.773.773a1.125 1.125 0 01-1.45.12l-.737-.527c-.35-.25-.806-.272-1.204-.108-.397.165-.71.505-.78.93l-.15.893c-.09.543-.56.94-1.11.94h-1.093c-.55 0-1.02-.397-1.11-.94l-.149-.893c-.07-.425-.383-.765-.78-.93-.398-.165-.854-.143-1.204.108l-.738.527c-.43.32-.96.27-1.45-.12l-.773-.773a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.893-.15c-.543-.09-.94-.56-.94-1.11v-1.093c0-.55.397-1.02.94-1.11l.893-.149c.425-.07.765-.383.93-.78.165-.398.143-.854-.108-1.204l-.527-.738c-.32-.43-.27-.96.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.806.272 1.204.108.397-.165.71-.505.78-.93l.15-.893z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Admin</h3>
+                                    <p class="text-sm text-gray-600">Manage portal settings and users.</p>
+                                </div>
+                            </div>
+                        </a>
+
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
+

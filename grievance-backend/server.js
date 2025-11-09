@@ -87,7 +87,7 @@ function startScheduler() {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/complaints', complaintRoutes);l
+app.use('/api/complaints', complaintRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Basic health

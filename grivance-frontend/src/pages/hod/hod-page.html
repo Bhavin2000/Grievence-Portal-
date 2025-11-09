@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOD Dashboard - Grievance Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A simple fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Custom style for the active sidebar link */
+        .sidebar-link.active {
+            background-color: #2563EB; /* A darker blue */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-container {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <div id="toast-notification" class="hidden fixed top-5 right-5 z-[100] bg-green-500 text-white py-3 px-6 rounded-lg shadow-xl transition-all duration-300 transform opacity-0 -translate-y-10">
+        <span id="toast-message"></span>
+    </div>
+
+    <div id="feedback-modal" class="modal-overlay hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 opacity-0">
+        <div class="modal-container bg-white w-full max-w-lg p-6 rounded-xl shadow-2xl transform scale-95 opacity-0">
+            <h2 id="modal-title" class="text-2xl font-bold text-gray-900 mb-4">Provide Feedback</h2>
+            <p id="modal-description" class="text-gray-600 mb-4">It is compulsory to provide feedback for this action.</p>
+            <form id="feedback-form">
+                <div>
+                    <label for="feedback-text" class="block text-sm font-medium text-gray-700 mb-2">Feedback / Reason</label>
+                    <textarea id="feedback-text" name="feedback-text" rows="5" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Enter your reason for approving or declining..."></textarea>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal()" class="py-2 px-5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" id="modal-submit-button" class="py-2 px-5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md">
+                        Submit Feedback
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="flex h-screen">
+        <nav class="w-64 bg-blue-600 text-white flex flex-col shadow-2xl">
+            <div class="p-6 flex items-center gap-3 border-b border-blue-500">
+                <svg class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.793a48.36 48.36 0 00-6.75 0.539V21" />
+                </svg>
+                <span class="text-xl font-bold">HOD Portal</span>
+            </div>
+            
+            <ul class="flex-1 p-4 space-y-2">
+                <li>
+                    <a href="#inbox" class="sidebar-link active flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="inbox-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.12-1.58H6.88a2.25 2.25 0 00-2.12 1.58L2.35 13.177a2.25 2.25 0 00-.1.661z" />
+                        </svg>
+                        <span>Grievance Inbox</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#teacher-personal" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="teacher-personal-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A1.875 1.875 0 0118 22.5H6a1.875 1.875 0 01-1.501-2.382z" />
+                        </svg>
+                        <span>Teacher Personal</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#forwarded" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="forwarded-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                        <span>Forwarded to Principal</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#sent-back" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="sent-back-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                        </svg>
+                        <span>Sent back to Teachers</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#principal-feedback" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="principal-feedback-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H7.5A3.375 3.375 0 004.125 5.25v13.5A3.375 3.375 0 007.5 22.5h7.125a3.375 3.375 0 003.375-3.375v-2.625A.75.75 0 0019.5 14.25z" />
+                        </svg>
+                        <span>Principal's Feedback</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#about-us" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="about-us-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372m-.178-9c.342.145.65.3.92.512m-9.342 9.342a9.38 9.38 0 002.625.372M18 10.5c.342.145.65.3.92.512m-9.342 9.342a9.38 9.38 0 002.625.372m-11.775-2.625a9.38 9.38 0 002.625.372M10.5 18c.342.145.65.3.92.512m-9.342 9.342a9.38 9.38 0 002.625.372M4.5 10.5c.342.145.65.3.92.512M12 4.5a3.75 3.75 0 00-3.75 3.75v.375c.621.43 1.28.75 1.99.932A7.5 7.5 0 0012 18a7.5 7.5 0 005.789-2.218c.71-.182 1.369-.502 1.99-.932v-.375A3.75 3.75 0 0012 4.5z" />
+                        </svg>
+                        <span>About Us</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="#about-college" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="about-college-content">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.793a48.36 48.36 0 00-6.75 0.539V21" />
+                        </svg>
+                        <span>About College</span>
+                    </a>
+                </li>
+
+            </ul>
+
+            <div class="p-4 border-t border-blue-500">
+                <a href="index.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-8 lg:p-12 overflow-y-auto">
+            
+            <h1 class="text-3xl font-bold text-gray-900 mb-8 fade-in">Welcome, HOD!</h1>
+
+            <div>
+                <div id="inbox-content" class="content-panel fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Grievance Inbox (From Teachers)</h2>
+                    <div class="space-y-4">
+
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="G-003" data-title="Request for Timetable Change">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex-1 min-w-[200px]">
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">Other</span>
+                                        <span class="text-gray-500 text-sm">From: S00123 (Mike Lee)</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">Request for Timetable Change</h3>
+                                    <p class="text-gray-600 text-sm mt-1">My elective class clashes with a core subject...</p>
+                                    <p class="text-sm text-red-600 font-medium mt-2">Response overdue (3 days). Automatically forwarded.</p>
+                                </div>
+                                <div class="action-buttons flex gap-3">
+                                    <span class="px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-bold">Auto-Forwarded</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="G-001" data-title="Broken Projector in Room 301">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex-1 min-w-[200px]">
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">Infrastructure</span>
+                                        <span class="text-gray-500 text-sm">From: S56789 (Jane Smith)</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">Broken Projector in Room 301</h3>
+                                    <p class="text-gray-600 text-sm mt-1">The projector in Room 301 has not been working for three days...</p>
+                                    <p class="text-sm text-green-600 font-medium mt-2">Response due in: 2 days</p>
+                                </div>
+                                <div class="action-buttons flex gap-3">
+                                    <button onclick="openModal('approve', this)" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
+                                    <button onclick="openModal('reject', this)" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <div id="teacher-personal-content" class="content-panel hidden fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Teacher Personal Grievances</h2>
+                    <p class="text-gray-600 mb-6">Grievances related to personal, payroll, or HR matters submitted by teachers.</p>
+                    <div class="space-y-4">
+
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="TP-001" data-title="Application for Emergency Medical Leave">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex-1 min-w-[200px]">
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">Leave Request</span>
+                                        <span class="text-gray-500 text-sm">From: T10234 (Priya Sharma)</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">Application for Emergency Medical Leave</h3>
+                                    <p class="text-gray-600 text-sm mt-1">Requesting 5 days of medical leave due to a family emergency...</p>
+                                    <p class="text-sm text-green-600 font-medium mt-2">Response due in: 1 day</p>
+                                </div>
+                                <div class="action-buttons flex gap-3">
+                                    <button onclick="openModal('approve', this)" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
+                                    <button onclick="openModal('reject', this)" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="TP-002" data-title="Discrepancy in October Salary">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex-1 min-w-[200px]">
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">Payroll</span>
+                                        <span class="text-gray-500 text-sm">From: T10567 (Rohan Gupta)</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">Discrepancy in October Salary</h3>
+                                    <p class="text-gray-600 text-sm mt-1">My salary for October is incorrect. Overtime pay is missing...</p>
+                                    <p class="text-sm text-green-600 font-medium mt-2">Response due in: 3 days</p>
+                                </div>
+                                <div class="action-buttons flex gap-3">
+                                    <button onclick="openModal('approve', this)" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Forward to HR</button>
+                                    <button onclick="openModal('reject', this)" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="TP-003" data-title="Request for Review of Timetable">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex-1 min-w-[200px]">
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">Workload</span>
+                                        <span class="text-gray-500 text-sm">From: T10112 (Anjali Singh)</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">Request for Review of Timetable</h3>
+                                    <p class="text-gray-600 text-sm mt-1">My current teaching load is 20% over the limit, with no breaks...</p>
+                                    <p class="text-sm text-green-600 font-medium mt-2">Response due in: 2 days</p>
+                                </div>
+                                <div class="action-buttons flex gap-3">
+                                    <button onclick="openModal('approve', this)" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
+                                    <button onclick="openModal('reject', this)" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="TP-004" data-title="Request for Ergonomic Equipment">
+                            <div class="flex flex-wrap items-center justify-between gap-4">
+                                <div class="flex-1 min-w-[200px]">
+                                    <div class="flex items-center gap-3 mb-1">
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">HR Issue</span>
+                                        <span class="text-gray-500 text-sm">From: T10889 (Vikram Rao)</span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900">Request for Ergonomic Equipment</h3>
+                                    <p class="text-gray-600 text-sm mt-1">Requesting an ergonomic chair for my desk due to persistent back pain...</p>
+                                    <p class="text-sm text-green-600 font-medium mt-2">Response due in: 3 days</p>
+                                </div>
+                                <div class="action-buttons flex gap-3">
+                                    <button onclick="openModal('approve', this)" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
+                                    <button onclick="openModal('reject', this)" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="forwarded-content" class="content-panel hidden fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Forwarded to Principal</h2>
+                    <div class="space-y-4">
+                        <div class="bg-white p-5 rounded-xl shadow-lg">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                                <div class="flex-1 min-w-[200px]">
+                                    <h3 class="text-lg font-bold text-gray-900">Request for Timetable Change</h3>
+                                    <span class="text-gray-500 text-sm">From: S00123 (Mike Lee)</span>
+                                </div>
+                                <div class="action-buttons">
+                                    <span class="px-4 py-2 bg-gray-200 text-gray-800 rounded-full text-sm font-bold">Auto-Forwarded</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sent-back-content" class="content-panel hidden fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Sent back to Teachers (Rejected)</h2>
+                    <div class="space-y-4">
+                    </div>
+                </div>
+
+                <div id="principal-feedback-content" class="content-panel hidden fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Principal's Feedback</h2>
+                    <p class="text-gray-600 mb-6">This section shows feedback from the Principal's office regarding grievances you have forwarded.</p>
+                    <div class="space-y-4">
+                        
+                        <div class="bg-white p-5 rounded-xl shadow-lg">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                                <div class="flex-1 min-w-[200px]">
+                                    <h3 class="text-lg font-bold text-gray-900">Request for Timetable Change</h3>
+                                    <span class="text-gray-500 text-sm">From: S00123 (Mike Lee)</span>
+                                </div>
+                                <div class="action-buttons">
+                                    <span class="px-4 py-2 bg-green-200 text-green-800 rounded-full text-sm font-bold">Action Taken</span>
+                                </div>
+                            </div>
+                            <div class="bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-md">
+                                <h4 class="font-bold mb-1">Principal's Feedback (Helpful):</h4>
+                                <p class="text-sm">"Thank you for escalating this. This was a valid issue affecting multiple students. We have adjusted the timetable for this elective. This was a helpful and constructive complaint."</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl shadow-lg">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                                <div class="flex-1 min-w-[200px]">
+                                    <h3 class="text-lg font-bold text-gray-900">Broken Projector in Room 301</h3>
+                                    <span class="text-gray-500 text-sm">From: S56789 (Jane Smith)</span>
+                                </div>
+                                <div class="action-buttons">
+                                    <span class="px-4 py-2 bg-yellow-200 text-yellow-800 rounded-full text-sm font-bold">Action Taken</span>
+                                </div>
+                            </div>
+                            <div class="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-md">
+                                <h4 class="font-bold mb-1">Principal's Feedback (Procedural):</h4>
+                                <p class="text-sm">"This issue has been resolved by maintenance. However, please note that infrastructure requests should first go through the internal department maintenance portal, not escalated this high. Please filter such requests in the future."</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+                <div id="about-us-content" class="content-panel hidden fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">About Us</h2>
+                    <div class="bg-white p-6 lg:p-8 rounded-xl shadow-lg space-y-4 text-gray-700 leading-relaxed">
+                        <p>
+                            This Grievance and Redressal Portal is a dedicated initiative developed to ensure a fair, transparent, and timely resolution process for all members of our college community. Our team is committed to upholding these values through a platform that is accessible and efficient for both students and staff.
+                        </p>
+                        
+                        <h3 class="text-xl font-semibold text-gray-800 pt-2">Our Mission</h3>
+                        <p>
+                            Our mission is to foster a safe, positive, and inclusive college environment by providing a secure and confidential platform for voicing concerns. We strive to address every grievance with empathy, integrity, and a steadfast commitment to a constructive resolution.
+                        </p>
+
+                        <h3 class="text-xl font-semibold text-gray-800 pt-2">Developed By</h3>
+                        <ul class="list-disc list-inside pl-4">
+                            <li>Nirbhav Kiran Bhale</li>
+                            <li>Vaibhav Milind Rane</li>
+                            <li>Smit Harshal Patil</li>
+                        </ul>
+
+                        <hr class="my-4">
+
+                        <h3 class="text-xl font-semibold text-gray-800">Connect with the Developers</h3>
+                        
+                        <div class="space-y-3">
+                            <h4 class="text-lg font-semibold text-gray-700">Nirbhav Kiran Bhale:</h4>
+                            <p class="flex flex-wrap gap-x-4 gap-y-2 items-center text-sm">
+                                <a href="https://www.linkedin.com/in/nirbhavbhale" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="16" height="16" alt="LinkedIn"> <b>LinkedIn</b>
+                                </a>
+                                <a href="https://www.instagram.com/nirbhav.bhale?igsh=MTY2ZGhmOXJ0M3RtNw==" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="16" height="16" alt="Instagram"> <b>Instagram</b>
+                                </a>
+                                <a href="https://x.com/BhaleNirbhav?t=2YImBLoRH-PLicWmAHcvCg&s=09" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/5969/5969020.png" width="16" height="16" alt="X logo"> <b>X</b>
+                                </a>
+                            </p>
+
+                            <h4 class="text-lg font-semibold text-gray-700 pt-2">Vaibhav Milind Rane:</h4>
+                            <p class="flex flex-wrap gap-x-4 gap-y-2 items-center text-sm">
+                                <a href="https://www.linkedin.com/in/vaibhav-rane-611b4b395?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="16" height="16" alt="LinkedIn"> <b>LinkedIn</b>
+                                </a>
+                                <a href="https://www.instagram.com/v.a.i.b.h.a.v_12?igsh=MnFiZHZxdXM4N21n" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="16" height="16" alt="Instagram"> <b>Instagram</b>
+                                </a>
+                                <a href="https://x.com/Vaibhav94552551?t=JDJeqQvT6A700pCEx9TJIg&s=08" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/5969/5969020.png" width="16" height="16" alt="X logo"> <b>X</b>
+                                </a>
+                            </p>
+
+                            <h4 class="text-lg font-semibold text-gray-700 pt-2">Smit Harshal Patil:</h4>
+                            <p class="flex flex-wrap gap-x-4 gap-y-2 items-center text-sm">
+                                <a href="https://www.linkedin.com/in/smit-patil-a25270266?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="16" height="16" alt="LinkedIn"> <b>LinkedIn</b>
+                                </a>
+                                <a href="https://www.instagram.com/smit_patil10?utm_source=qr&igsh=MW1qZnFsNXM5MnFyYQ==" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="16" height="16" alt="Instagram"> <b>Instagram</b>
+                                </a>
+                                <a href="https://x.com/Smitpatil7?t=m5TGQ-A2KpYqRwAuRDCUxQ&s=08" target="_blank" class="flex items-center gap-1.5 text-blue-600 hover:underline">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/5969/5969020.png" width="16" height="16" alt="X logo"> <b>X</b>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="about-college-content" class="content-panel hidden fade-in">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">About Our College</h2>
+                    <div class="bg-white p-6 lg:p-8 rounded-xl shadow-lg space-y-4">
+                        <h3 class="text-xl font-semibold text-gray-800">Our History</h3>
+                        <p class="text-gray-700 leading-relaxed">
+                            Founded in 1960 at Elphinstone Technical School, Government Polytechnic, Mumbai (GPM) is one of the oldest and most prestigious diploma engineering colleges in Maharashtra. This institute relocated to its present campus in Bandra in 1985 and was awarded academic autonomy in 1990. For decades, GPM has been a cornerstone of higher technical education, pioneering capacity and quality improvements through significant initiatives, including the World Bank Assisted Projects (1990–1998) and the Canada India Industry Polytechnic Linkage Project (2002).
+                        </p>
+                        <h3 class="text-xl font-semibold text-gray-800 pt-2">Vision & Values</h3>
+                        <p class="text-gray-700 leading-relaxed">
+                            Our vision is guided by our motto: "Transform Knowledge into Work." We strive to be a leading academically autonomous institute, committed to developing competent, industry-ready technicians and fostering sustainable development through continuous improvement in our curriculum. We maintain strong liaison with industries and implement an outcome-based curriculum that includes mandatory six-month in-plant training for all students.
+                        </p>
+                        <h4 class="text-lg font-semibold text-gray-800 pt-2">Core Values:</h4>
+                        <ul class="list-disc list-inside text-gray-700 pl-4 space-y-1">
+                            <li><b>Excellence:</b> Upholding high academic standards as an autonomous, government-supported body.</li>
+                            <li><b>Innovation:</b> Implementing modern curricula and encouraging project-based learning using the latest tools and technologies.</li>
+                            <li><b>Industry-Readiness:</b> Focusing on practical skills and hands-on experience through the sandwich-pattern diploma programs.</li>
+                            <li><b>Inclusivity:</b> Dedicated to community development and bringing Persons With Disabilities (PWD) into the mainstream of technical education.</li>
+                            <li><b>Autonomy:</b> Utilizing self-governance to continuously adapt and keep pace with emerging technologies.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+<script src="./hod-page.js"></script>
+
+</body>
+</html>

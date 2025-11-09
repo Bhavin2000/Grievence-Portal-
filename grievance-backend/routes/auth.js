@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
+const { authenticate } = require('../middleware/auth');
 const User = require('../models/User');
 
 const router = express.Router();
@@ -11,7 +12,7 @@ router.post('/register',
   body('name').notEmpty(),
   body('email').isEmail(),
   body('password').isLength({ min: 6 }),
-  body('role').isIn(['student','teacher','hod','principal','admin']),
+  body('role').isIn(['student', 'teacher', 'hod', 'principal', 'admin']),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -40,11 +41,22 @@ router.post('/login',
       if (!user) return res.status(400).json({ message: 'Invalid credentials' });
       const ok = await bcrypt.compare(password, user.passwordHash);
       if (!ok) return res.status(400).json({ message: 'Invalid credentials' });
-      const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+      const token = jwt.sign({ id: user._id, role: user.role, name: user.name }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
       res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   });
+
+// Get current user info
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-passwordHash');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;
