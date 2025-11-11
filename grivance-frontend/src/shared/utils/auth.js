@@ -16,7 +16,7 @@ export const removeToken = () => {
 export const isAuthenticated = () => {
     const token = getToken();
     if (!token) return false;
-    
+
     try {
         // Decode JWT token to check expiration
         const payload = JSON.parse(atob(token.split('.')[1]));
@@ -29,7 +29,7 @@ export const isAuthenticated = () => {
 export const getUserRole = () => {
     const token = getToken();
     if (!token) return null;
-    
+
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return payload.role;
@@ -41,7 +41,7 @@ export const getUserRole = () => {
 export const getUserInfo = () => {
     const token = getToken();
     if (!token) return null;
-    
+
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return {
@@ -69,24 +69,18 @@ export const redirectIfNotAuthenticated = () => {
 export const redirectBasedOnRole = () => {
     const role = getUserRole();
     
-    switch (role) {
-        case 'admin':
-            window.location.href = '/admin-portal.html';
-            break;
-        case 'hod':
-            window.location.href = '/hod-page.html';
-            break;
-        case 'principal':
-            window.location.href = '/principal-dashboard.html';
-            break;
-        case 'teacher':
-            window.location.href = '/teachers-portal.html';
-            break;
-        case 'student':
-            window.location.href = '/student-home.html';
-            break;
-        default:
-            window.location.href = '/login.html';
+    const roleRedirects = {
+        admin: '/admin-portal.html',
+        hod: '/hod-page.html',
+        principal: '/principal-dashboard.html',
+        teacher: '/teachers-portal.html',
+        student: '/student-home.html',
+    };
+
+    const targetPage = roleRedirects[role] || '/login.html';
+
+    if (window.location.pathname !== targetPage) {
+        window.location.href = targetPage;
     }
 };
 

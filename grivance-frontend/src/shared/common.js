@@ -1,5 +1,5 @@
 // Common functions and utilities
-import { isAuthenticated, logout, getUserInfo } from './utils/auth.js';
+import { isAuthenticated, logout, getUserInfo, redirectBasedOnRole } from './utils/auth.js';
 import { showNotification } from './utils/dom.js';
 
 // Global navigation functions
@@ -61,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
         !window.location.pathname.includes('index')) {
         if (!isAuthenticated()) {
             window.location.href = '/login.html';
+        }else{
+            redirectBasedOnRole();
         }
     }
 });

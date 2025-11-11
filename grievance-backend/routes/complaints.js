@@ -55,7 +55,7 @@ router.get('/inbox', authenticate, async (req, res) => {
     if (req.user.role === 'admin') {
       // admins see all pending (optionally filter category)
       if (category) baseFilter.category = category;
-      const list = await Complaint.find(baseFilter).sort({ createdAt: -1 });
+      const list = await Complaint.find(baseFilter).populate('createdBy', 'name email role').sort({ createdAt: -1 });
       return res.json(list);
     }
 
@@ -65,7 +65,7 @@ router.get('/inbox', authenticate, async (req, res) => {
     baseFilter.stage = role;
     if (category) baseFilter.category = category;
 
-    const list = await Complaint.find(baseFilter).sort({ createdAt: -1 });
+    const list = await Complaint.find(baseFilter).populate('createdBy', 'name email role').sort({ createdAt: -1 });
     res.json(list);
   } catch (err) {
     res.status(500).json({ message: err.message });

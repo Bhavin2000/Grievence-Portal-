@@ -1,11 +1,14 @@
 ﻿
-// import "../../shared/common.js"; // Import common functionality
+import "../../shared/common.js"; // Import common functionality
+import { handleGrievanceFormSubmit, inboxCardBtnHandler, loadExistingComplaints, showInbox } from "../../shared/common-dom/common-dom";
+
 
 
 document.addEventListener('DOMContentLoaded', function () {
     // --- Tab Navigation Logic ---
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
     const contentPanels = document.querySelectorAll('.content-panel');
+    const grievanceForm = document.getElementById('teacher-grievance-form');
 
     sidebarLinks.forEach(link => {
         link.addEventListener('click', function (event) {
@@ -30,6 +33,14 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.add('active');
         });
     });
+
+        // --- Teacher Grievance Form Submission ---
+    loadExistingComplaints();
+
+    grievanceForm?.addEventListener('submit', handleGrievanceFormSubmit);
+
+    showInbox();
+    inboxCardBtnHandler();
 
     // --- Grievance Handling Logic ---
     function handleGrievance(button, action) {
@@ -96,74 +107,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // --- **** END OF NEW LOGIC **** ---
 
-    // --- Teacher Grievance Form Submission ---
-    document.getElementById('teacher-grievance-form').addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        // Get form values
-        const category = document.getElementById('grievance-category').value;
-        const subject = document.getElementById('grievance-subject').value;
-        const description = document.getElementById('grievance-description').value;
-
-        // Simulate submission
-        console.log('Teacher grievance submitted:');
-        console.log('Category:', category);
-        console.log('Subject:', subject);
-
-        // --- NEW: Add to tracking list ---
-        addGrievanceToTracker(category, subject, description);
-
-        // Show success toast
-        showToast('Your grievance has been submitted.', 'bg-blue-500'); // Use blue for info
-
-        // Reset form
-        this.reset();
-    });
-
-    // --- **** MODIFIED FUNCTION: Add to Tracking List **** ---
-    // This function now creates the 4-step progress bar as requested
-    function addGrievanceToTracker(category, subject, description) {
-        const trackingList = document.getElementById('grievance-tracking-list');
-        const emptyMessage = document.getElementById('empty-tracking-message');
-
-        // Hide the empty message
-        if (emptyMessage) {
-            emptyMessage.classList.add('hidden');
-        }
-
-        // Generate a fake tracking ID and date
-        const trackingId = `T${Math.floor(10000 + Math.random() * 90000)}`;
-        const submissionDate = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
-
-        // Create the new card HTML
-        const cardHTML = `
-                <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-sm fade-in" data-tracking-id="${trackingId}" data-status="Submitted">
-                    <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
-                        <h3 class="text-lg font-semibold text-gray-800">${category}: ${subject}</h3>
-                        <span class="text-sm font-medium text-blue-600">Status: Submitted</span>
-                    </div>
-                    <p class="text-gray-600 text-sm mb-4">${description}</p>
-                    
-                    <div class="w-full mb-3">
-                        <div class="flex justify-between text-xs text-gray-600 mb-1">
-                            <span class="font-semibold text-blue-600">Submitted</span>
-                            <span class="text-gray-400">HOD Review</span>
-                            <span class="text-gray-400">Principal Review</span>
-                            <span class="text-gray-400">Resolved</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 25%"></div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-wrap justify-between items-center text-sm text-gray-500 gap-x-4 pt-2 border-t border-gray-200">
-                        <span>Tracking ID: #${trackingId}</span>
-                        <span>Submitted on: ${submissionDate}</span>
-                    </div>
-                </div>
-            `;
-
-        // Add the new card to the top of the list
-        trackingList.insertAdjacentHTML('afterbegin', cardHTML);
-    }
+    
 })

@@ -1,9 +1,18 @@
-import { createComplaint, getMyComplaints } from "../utils/api.js";
+import { approveComplaint, createComplaint, getInboxComplaints, getMyComplaints, rejectComplaint } from "../utils/api.js";
+import { getUserRole } from "../utils/auth.js";
 
 export async function loadExistingComplaints() {
     try {
         // Use getMyComplaints() which already filters by authenticated user
+        const role = getUserRole();
+
         const complaints = await getMyComplaints();
+        if (role === 'teacher') {
+            complaints.forEach(complaint => {
+                addGrievanceToTeacherTracker(complaint);
+            });
+            return;
+        }
 
         // Separate complaints into active and completed
         const activeComplaints = complaints.filter(complaint =>
@@ -87,6 +96,127 @@ export function addGrievanceToStudentTracker(complaintData) {
     card.innerHTML = generateTrackerHTML(category, title, description, displayStatus, trackingId, createdAt, stage);
 
     trackingList.insertAdjacentElement('afterbegin', card);
+}
+
+export function addGrievanceToTeacherTracker(complaintData) {
+    const trackingList = document.getElementById('grievance-tracking-list');
+    const emptyMessage = document.getElementById('empty-tracking-message');
+
+    const trackingId = complaintData._id;
+    const category = complaintData.category;
+    const title = complaintData.title;
+    const description = complaintData.description;
+    const status = complaintData.status;
+    const stage = complaintData.stage;
+    const submissionDate = new Date(complaintData.createdAt).toLocaleDateString();
+
+    // Hide the empty message
+    if (emptyMessage) {
+        emptyMessage.classList.add('hidden');
+    }
+
+    // Map stage to display status for teacher view
+    const getDisplayStatus = (stage, status) => {
+        switch (stage) {
+            case 'teacher': return 'Under Review';
+            case 'hod': return 'Forwarded to HOD';
+            case 'principal': return 'With Principal';
+            default: return 'New Assignment';
+        }
+    };
+
+    const displayStatus = getDisplayStatus(stage, status);
+
+    // Create card element
+    const card = document.createElement('div');
+    card.className = "bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm fade-in";
+    card.setAttribute('data-tracking-id', trackingId);
+    card.setAttribute('data-status', displayStatus);
+    card.setAttribute('data-stage', stage);
+    card.setAttribute('data-api-status', status);
+
+    // Generate tracker HTML with proper tracking structure
+    card.innerHTML = generateTeacherTrackerHTML(category, title, description, displayStatus, trackingId, submissionDate, stage);
+
+    // Add the new card to the top of the list
+    trackingList.insertAdjacentElement('afterbegin', card);
+}
+
+function generateTeacherTrackerHTML(category, title, description, displayStatus, trackingId, submissionDate, stage) {
+    const getStageStyles = (currentStage, targetStage) => {
+        const stages = ['teacher', 'hod', 'principal'];
+        const currentIndex = stages.indexOf(currentStage);
+        const targetIndex = stages.indexOf(targetStage);
+
+        if (targetIndex < currentIndex) {
+            return {
+                icon: 'bg-green-600 text-white',
+                label: 'text-green-600',
+                content: '✓'
+            };
+        } else if (targetIndex === currentIndex) {
+            return {
+                icon: 'bg-blue-600 text-white',
+                label: 'text-blue-600',
+                content: targetIndex + 1
+            };
+        } else {
+            return {
+                icon: 'bg-gray-300 text-gray-600',
+                label: 'text-gray-400',
+                content: targetIndex + 1
+            };
+        }
+    };
+
+    const teacherStyles = getStageStyles(stage, 'teacher');
+    const hodStyles = getStageStyles(stage, 'hod');
+    const principalStyles = getStageStyles(stage, 'principal');
+
+    return `
+        <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+            <h3 class="text-lg font-semibold text-gray-800">${category}: ${title}</h3>
+            <span class="status-badge text-sm font-medium text-blue-600">Status: ${displayStatus}</span>
+        </div>
+        <p class="text-gray-600 text-sm mb-6">${description}</p>
+        
+        <div class="live-tracker-container w-full my-4 px-2">
+            <div class="flex items-start">
+                <div class="flex-1 flex flex-col items-center relative">
+                    <div class="tracker-step-icon flex items-center justify-center w-8 h-8 ${teacherStyles.icon} rounded-full font-bold">
+                        ${teacherStyles.content}
+                    </div>
+                    <span class="tracker-step-label text-xs font-medium ${teacherStyles.label} mt-1">Submitted</span>
+                    <div class="tracker-connector absolute top-4 left-1/2 w-full h-1 bg-gray-200 -z-10">
+                        <div class="h-1 ${stage === 'teacher' ? 'bg-blue-600' : stage === 'hod' || stage === 'principal' ? 'bg-green-600' : 'bg-gray-200'}" style="width: ${stage === 'teacher' ? '50%' : '100%'};"></div>
+                    </div>
+                </div>
+                
+                <div class="flex-1 flex flex-col items-center relative">
+                    <div class="tracker-step-icon flex items-center justify-center w-8 h-8 ${hodStyles.icon} rounded-full font-bold">
+                        ${hodStyles.content}
+                    </div>
+                    <span class="tracker-step-label text-xs font-medium ${hodStyles.label} mt-1">HOD Review</span>
+                    <div class="tracker-connector absolute top-4 left-1/2 w-full h-1 bg-gray-200 -z-10">
+                        <div class="h-1 ${stage === 'hod' ? 'bg-blue-600' : stage === 'principal' ? 'bg-green-600' : 'bg-gray-200'}" style="width: ${stage === 'hod' ? '50%' : stage === 'principal' ? '100%' : '0%'};"></div>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col items-center relative">
+                    <div class="tracker-step-icon flex items-center justify-center w-8 h-8 ${principalStyles.icon} rounded-full font-bold">
+                        ${principalStyles.content}
+                    </div>
+                    <span class="tracker-step-label text-xs font-medium ${principalStyles.label} mt-1">Principal Review</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap justify-between items-center text-sm text-gray-500 gap-x-4 pt-4 border-t border-gray-200">
+            <span>Tracking ID: #${trackingId}</span>
+            <span>Submitted on: ${submissionDate}</span>
+            <button class="bg-gray-200 text-gray-800 py-1 px-3 rounded-lg font-semibold hover:bg-gray-300 transition-all text-xs" onclick="updateGrievanceStatus(this)">Check Status</button>
+        </div>
+    `;
 }
 
 // --- Add to History ---
@@ -213,6 +343,7 @@ export async function handleGrievanceFormSubmit(event) {
     const description = document.getElementById('grievance-description').value;
 
     try {
+        const role = getUserRole();
         // Show loading state
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
@@ -223,8 +354,11 @@ export async function handleGrievanceFormSubmit(event) {
         const response = await createComplaint({ category, title, description });
 
         // Add to tracking list using API response
-        addGrievanceToStudentTracker(response);
-
+        if (role === 'student') {
+            addGrievanceToStudentTracker(response);
+        } else if (role === 'teacher') {
+            addGrievanceToTeacherTracker(response);
+        }
         showToast('Your complaint has been submitted successfully.', 'bg-blue-500');
         this.reset();
 
@@ -260,4 +394,73 @@ export function showToast(message, bgColor) {
         toast.classList.add('opacity-0', '-translate-y-10');
         setTimeout(() => toast.classList.add('hidden'), 500);
     }, 3000);
+}
+
+export async function showInbox() {
+    const inbox = await getInboxComplaints();
+    const InboxWrapper = document.querySelector('.grievance-card-wrapper');
+    if (!inbox.length) return;
+    InboxWrapper.innerHTML = '';
+    inbox.forEach(item => {
+        const card = GrievanceInboxCardDom(item);
+        InboxWrapper.insertAdjacentHTML('beforeend', card);
+    });
+}
+
+export function inboxCardBtnHandler() {
+    const cardWrapper = document.querySelector('.grievance-card-wrapper');
+    cardWrapper.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'approve') {
+            const cardId = e.target.closest('.grievance-card').dataset.cardId;
+            approveComplaint(cardId);
+            handleGrievance(e.target);
+        } else if (e.target.dataset.action === 'denied') {
+            const cardId = e.target.closest('.grievance-card').dataset.cardId;
+            rejectComplaint(cardId,'User did not provide a reason');
+            handleGrievance(e.target);
+        }
+    });
+}
+
+
+export function GrievanceInboxCardDom(item) {
+    return ` <div class="grievance-card bg-white p-5 rounded-xl shadow-lg flex flex-wrap items-center justify-between gap-4" data-card-id=${item._id}>
+        <div class="flex-1 min-w-[200px]">
+            <div class="flex items-center gap-3 mb-1">
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">${item.category}</span>
+                <span class="text-gray-500 text-sm">From: ${item.createdBy.email} (${item.createdBy.name})</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">${item.title}</h3>
+            <p class="text-gray-600 text-sm mt-1">${item.description}</p>
+        </div>
+        <div class="action-buttons flex gap-3">
+            <button class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md" data-action="approve">Approve</button>
+            <button class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md " data-action="denied">Deny</button>
+        </div>
+    </div>`;
+}
+
+function handleGrievance(button) {
+    const card = button.closest('.grievance-card');
+    const actionStatus = button.dataset.action;
+    const actionButtons = card.querySelector('.action-buttons');
+    let message = '';
+    let toastBg = '';
+
+    // This is a simulation. In a real app, you'd call an API.
+    if (actionStatus === 'approve') {
+        message = 'Grievance approved and forwarded to HOD.';
+        toastBg = 'bg-green-500';
+        actionButtons.innerHTML = `<span class="px-4 py-2 bg-green-200 text-green-800 rounded-full text-sm font-bold">Forwarded to HOD</span>`;
+    } else if (actionStatus === 'denied') {
+        message = 'Grievance has been rejected.';
+        toastBg = 'bg-red-500';
+        actionButtons.innerHTML = `<span class="px-4 py-2 bg-red-200 text-red-800 rounded-full text-sm font-bold">Rejected</span>`;
+    }
+
+    // Show toast notification
+    showToast(message, toastBg);
+
+    // Make the card look processed
+    card.classList.add('opacity-70', 'bg-gray-50');
 }
