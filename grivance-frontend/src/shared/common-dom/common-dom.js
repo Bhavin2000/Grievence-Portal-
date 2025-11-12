@@ -396,8 +396,9 @@ export function showToast(message, bgColor) {
     }, 3000);
 }
 
-export async function showInbox() {
+export async function showTeacherInbox() {
     const inbox = await getInboxComplaints();
+    console.log('Inbox Complaints:', inbox);
     const InboxWrapper = document.querySelector('.grievance-card-wrapper');
     if (!inbox.length) return;
     InboxWrapper.innerHTML = '';
@@ -405,10 +406,10 @@ export async function showInbox() {
         const card = GrievanceInboxCardDom(item);
         InboxWrapper.insertAdjacentHTML('beforeend', card);
     });
+    teacherInboxCardBtnHandler(InboxWrapper);
 }
 
-export function inboxCardBtnHandler() {
-    const cardWrapper = document.querySelector('.grievance-card-wrapper');
+export function teacherInboxCardBtnHandler(cardWrapper) {
     cardWrapper.addEventListener('click', (e) => {
         if (e.target.dataset.action === 'approve') {
             const cardId = e.target.closest('.grievance-card').dataset.cardId;
@@ -416,11 +417,220 @@ export function inboxCardBtnHandler() {
             handleGrievance(e.target);
         } else if (e.target.dataset.action === 'denied') {
             const cardId = e.target.closest('.grievance-card').dataset.cardId;
-            rejectComplaint(cardId,'User did not provide a reason');
+            rejectComplaint(cardId, 'User did not provide a reason');
             handleGrievance(e.target);
         }
     });
 }
+
+export async function showHodInbox() {
+    const inbox = await getInboxComplaints();
+    const InboxWrapper = document.querySelector('.grievance-card-wrapper');
+    const teacherPersonal = document.querySelector('.teacher-personal');
+    if (!inbox.length) return;
+
+    const studentComplaints = inbox.filter(complaint => complaint.createdBy.role === 'student');
+    const teacherComplaints = inbox.filter(complaint => complaint.createdBy.role === 'teacher');
+
+    InboxWrapper.innerHTML = '';
+    teacherPersonal.innerHTML = '';
+    studentComplaints.forEach(item => {
+        const card = GrievanceInboxCardDom(item);
+        InboxWrapper.insertAdjacentHTML('beforeend', card);
+    });
+    teacherComplaints.forEach(item => {
+        const card = GrievanceInboxCardDom(item);
+        teacherPersonal.insertAdjacentHTML('beforeend', card);
+    });
+    hodInboxCardBtnHandler(InboxWrapper);
+    hodInboxCardBtnHandler(teacherPersonal);
+    buttonHandlerForModal();
+    submitReviewHod();
+}
+
+
+function createModalManager() {
+    // Private variables (encapsulated within closure)
+    const modal = document.getElementById('feedback-modal');
+    const modalOverlay = document.querySelector('.modal-overlay');
+    const modalContainer = document.querySelector('.modal-container');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDescription = document.getElementById('modal-description');
+    const modalSubmitButton = document.getElementById('modal-submit-button');
+    const feedbackForm = document.getElementById('feedback-form');
+    const feedbackText = document.getElementById('feedback-text');
+
+    let currentCard = null;
+    let currentAction = '';
+
+    // Private methods
+    function openModal(action, button) {
+        console.log('Opening modal for action:', button);
+        currentCard = button.closest('.grievance-card');
+        currentAction = action;
+
+        if (action === 'approve') {
+            modalTitle.textContent = 'Approve and Forward to Principal';
+            modalDescription.textContent = 'Please provide your approval notes. This will be forwarded to the Principal.';
+            modalSubmitButton.className = 'py-2 px-5 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md';
+            modalSubmitButton.textContent = 'Approve & Submit';
+        } else if (action === 'reject') {
+            modalTitle.textContent = 'Reject and Send back to Teacher';
+            modalDescription.textContent = 'Please provide a clear reason for rejecting. This feedback will be sent to the teacher.';
+            modalSubmitButton.className = 'py-2 px-5 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md';
+            modalSubmitButton.textContent = 'Reject & Submit';
+        }
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modalOverlay.classList.remove('opacity-0');
+            modalContainer.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    }
+
+    function closeModal() {
+        modalOverlay.classList.add('opacity-0');
+        modalContainer.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            feedbackForm.reset();
+        }, 300);
+    }
+
+    // Public API (returned object)
+    return {
+        open: openModal,
+        close: closeModal,
+        getCurrentCard: () => currentCard,
+        getCurrentAction: () => currentAction,
+        getForm: () => feedbackForm,
+        getFeedbackText: () => feedbackText
+    };
+}
+
+// Create modal manager instance
+export const modalManager = createModalManager();
+
+export function hodInboxCardBtnHandler(cardWrapper) {
+    cardWrapper.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'approve') {
+            modalManager.open('approve', e.target);
+        } else if (e.target.dataset.action === 'denied') {
+            modalManager.open('reject', e.target);
+        }
+    });
+}
+
+export function submitReviewHod() {
+    modalManager.getForm().addEventListener('submit', function (event) {
+        event.preventDefault();
+        const feedback = modalManager.getFeedbackText().value;
+        const currentCard = modalManager.getCurrentCard();
+        const currentAction = modalManager.getCurrentAction();
+        const grievanceTitle = currentCard.querySelector('h3').textContent;
+        const actionButtons = currentCard.querySelector('.action-buttons');
+        const cardId = currentCard.dataset.cardId;
+
+        let message = '';
+        let toastBg = '';
+        let newStatusHTML = '';
+        let logPanelId = '';
+        let logHTML = '';
+
+        if (currentAction === 'approve') {
+            approveComplaint(cardId, feedback);
+            message = 'Grievance approved and forwarded to Principal.';
+            toastBg = 'bg-green-500';
+            newStatusHTML = `<span class="px-4 py-2 bg-green-200 text-green-800 rounded-full text-sm font-bold">Forwarded to Principal</span>`;
+            logPanelId = 'forwarded-content';
+            logHTML = `
+                        <div class="bg-white p-5 rounded-xl shadow-lg">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                                <h3 class="text-lg font-bold text-gray-900">${grievanceTitle}</h3>
+                                <span class="px-4 py-2 bg-green-200 text-green-800 rounded-full text-sm font-bold">Approved</span>
+                            </div>
+                            <div class="bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-md">
+                                <h4 class="font-bold mb-1">Your Feedback:</h4>
+                                <p class="text-sm">${feedback}</p>
+                            </div>
+                        </div>`;
+
+        } else if (currentAction === 'reject') {
+            rejectComplaint(cardId, feedback);
+            message = 'Grievance rejected and sent back to teacher.';
+            toastBg = 'bg-red-500';
+            newStatusHTML = `<span class="px-4 py-2 bg-red-200 text-red-800 rounded-full text-sm font-bold">Rejected (Sent to Teacher)</span>`;
+            logPanelId = 'sent-back-content';
+            logHTML = `
+                        <div class="bg-white p-5 rounded-xl shadow-lg">
+                            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                                <h3 class="text-lg font-bold text-gray-900">${grievanceTitle}</h3>
+                                <span class="px-4 py-2 bg-red-200 text-red-800 rounded-full text-sm font-bold">Rejected</span>
+                            </div>
+                            <div class="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 rounded-md">
+                                <h4 class="font-bold mb-1">Your Feedback:</h4>
+                                <p class="text-sm">${feedback}</p>
+                            </div>
+                        </div>`;
+        }
+
+        // Update UI
+        actionButtons.innerHTML = newStatusHTML;
+        currentCard.classList.add('opacity-70', 'bg-gray-50');
+
+        // Add to log panels
+        document.querySelector(`#${logPanelId} .space-y-4`).insertAdjacentHTML('afterbegin', logHTML);
+
+        showToast(message, toastBg);
+        modalManager.close();
+    });
+}
+
+export function buttonHandlerForModal() {
+    const modal = document.getElementById('feedback-modal');
+    modal.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'cancel') {
+            modalManager.close();
+        } else if (e.target.dataset.action === 'submit') {
+            const feedback = modalManager.getFeedbackText().value;
+            if (feedback) {
+                console.log('Feedback submitted:', feedback);
+                modalManager.close();
+            }
+        }
+    });
+}
+
+
+export function ForwardedToPrincipalCardDom(item) {
+    return `
+        <div class="bg-white p-5 rounded-xl shadow-lg">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                <h3 class="text-lg font-bold text-gray-900">${grievanceTitle}</h3>
+                <span class="px-4 py-2 bg-red-200 text-red-800 rounded-full text-sm font-bold">Rejected</span>
+            </div>
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 rounded-md">
+                <h4 class="font-bold mb-1">Your Feedback:</h4>
+                <p class="text-sm">${feedback}</p>
+            </div>
+        </div>`;
+}
+
+export function SentBackToTeacherCardDom(item) {
+    return `
+        <div class="bg-white p-5 rounded-xl shadow-lg">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+                <h3 class="text-lg font-bold text-gray-900">${grievanceTitle}</h3>
+                <span class="px-4 py-2 bg-red-200 text-red-800 rounded-full text-sm font-bold">Rejected</span>
+            </div>
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 rounded-md">
+                <h4 class="font-bold mb-1">Your Feedback:</h4>
+                <p class="text-sm">${feedback}</p>
+            </div>
+        </div>`;
+}
+
+
 
 
 export function GrievanceInboxCardDom(item) {

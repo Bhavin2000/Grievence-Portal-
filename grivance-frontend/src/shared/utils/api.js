@@ -3,7 +3,7 @@ export const API_BASE_URL = 'http://localhost:4000/api';
 
 export const apiRequest = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
-    
+
     const config = {
         headers: {
             'Content-Type': 'application/json',
@@ -14,11 +14,11 @@ export const apiRequest = async (endpoint, options = {}) => {
 
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('API request failed:', error);
@@ -67,9 +67,10 @@ export const deleteComplaint = async (id) => {
 };
 
 // Complaint actions (approve/reject)
-export const approveComplaint = async (id) => {
+export const approveComplaint = async (id, reason) => {
     return apiRequest(`/complaints/${id}/approve`, {
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify({ reason })
     });
 };
 
@@ -86,4 +87,27 @@ export const addComment = async (id, comment) => {
         method: 'POST',
         body: JSON.stringify({ comment })
     });
+};
+
+export const getComplaintsForwardedByMe = async () => {
+    return apiRequest('/complaints/forwarded-by-me');
+};
+
+export const getComplaintsRejectedByMe = async () => {
+    return apiRequest('/complaints/rejected-by-me');
+};
+
+export const getComplaintsAutoApprovedByMe = async () => {
+    return apiRequest('/complaints/auto-approved-by-me');
+};
+
+export const getMyApprovalsLaterRejected = async () => {
+    return apiRequest('/complaints/my-approvals-later-rejected');
+};
+
+export const getComplaintsRaisedByRole = async (role) => {
+    if (!['student', 'teacher'].includes(role)) {
+        throw new Error('Role must be either "student" or "teacher"');
+    }
+    return apiRequest(`/complaints/raised/by-role/${role}`);
 };

@@ -1,6 +1,6 @@
 ﻿
 import "../../shared/common.js"; // Import common functionality
-import { handleGrievanceFormSubmit, inboxCardBtnHandler, loadExistingComplaints, showInbox } from "../../shared/common-dom/common-dom";
+import { handleGrievanceFormSubmit, loadExistingComplaints, showTeacherInbox } from "../../shared/common-dom/common-dom";
 
 
 
@@ -39,8 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     grievanceForm?.addEventListener('submit', handleGrievanceFormSubmit);
 
-    showInbox();
-    inboxCardBtnHandler();
+    showTeacherInbox();
 
     // --- Grievance Handling Logic ---
     function handleGrievance(button, action) {

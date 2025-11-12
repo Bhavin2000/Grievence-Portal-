@@ -45,11 +45,11 @@
                     <label for="feedback-text" class="block text-sm font-medium text-gray-700 mb-2">Feedback / Reason</label>
                     <textarea id="feedback-text" name="feedback-text" rows="5" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="Enter your reason for approving or declining..."></textarea>
                 </div>
-                <div class="mt-6 flex justify-end gap-3">
-                    <button type="button" onclick="closeModal()" class="py-2 px-5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all">
+                <div class="mt-6 flex justify-end gap-3 form-buttons">
+                    <button type="button" class="py-2 px-5 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all " data-action="cancel">
                         Cancel
                     </button>
-                    <button type="submit" id="modal-submit-button" class="py-2 px-5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md">
+                    <button type="submit" id="modal-submit-button" class="py-2 px-5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md"  data-action="submit">
                         Submit Feedback
                     </button>
                 </div>
@@ -130,12 +130,12 @@
             </ul>
 
             <div class="p-4 border-t border-blue-500">
-                <a href="index.html" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
+                   <botton data-action="logout" class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m-3 0l3-3m0 0l-3-3m3 3H9" />
                     </svg>
                     <span>Logout</span>
-                </a>
+                </button>
             </div>
         </nav>
 
@@ -146,7 +146,7 @@
             <div>
                 <div id="inbox-content" class="content-panel fade-in">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Grievance Inbox (From Teachers)</h2>
-                    <div class="space-y-4">
+                    <div class="space-y-4 grievance-card-wrapper">
 
                         <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="G-003" data-title="Request for Timetable Change">
                             <div class="flex flex-wrap items-center justify-between gap-4">
@@ -177,8 +177,8 @@
                                     <p class="text-sm text-green-600 font-medium mt-2">Response due in: 2 days</p>
                                 </div>
                                 <div class="action-buttons flex gap-3">
-                                    <button onclick="openModal('approve', this)" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
-                                    <button onclick="openModal('reject', this)" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
+                                    <button  class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
+                                    <button  class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
                                 </div>
                             </div>
                         </div>
@@ -189,7 +189,7 @@
                 <div id="teacher-personal-content" class="content-panel hidden fade-in">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Teacher Personal Grievances</h2>
                     <p class="text-gray-600 mb-6">Grievances related to personal, payroll, or HR matters submitted by teachers.</p>
-                    <div class="space-y-4">
+                    <div class="space-y-4 teacher-personal">
 
                         <div class="grievance-card bg-white p-5 rounded-xl shadow-lg" data-id="TP-001" data-title="Application for Emergency Medical Leave">
                             <div class="flex flex-wrap items-center justify-between gap-4">
@@ -257,8 +257,8 @@
                                     <p class="text-sm text-green-600 font-medium mt-2">Response due in: 3 days</p>
                                 </div>
                                 <div class="action-buttons flex gap-3">
-                                    <button onclick="openModal('approve', this)" class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md">Approve</button>
-                                    <button onclick="openModal('reject', this)" class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">Reject</button>
+                                    <button class="bg-green-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-600 transition-all shadow-md" data-action="approve">Approve</button>
+                                    <button class="bg-red-500 text-white py-2 px-5 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md" data-action="reject">Reject</button>
                                 </div>
                             </div>
                         </div>
@@ -267,7 +267,7 @@
                 </div>
                 <div id="forwarded-content" class="content-panel hidden fade-in">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Forwarded to Principal</h2>
-                    <div class="space-y-4">
+                    <div class="space-y-4 forwarded-principal">
                         <div class="bg-white p-5 rounded-xl shadow-lg">
                             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                                 <div class="flex-1 min-w-[200px]">
@@ -284,15 +284,15 @@
 
                 <div id="sent-back-content" class="content-panel hidden fade-in">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Sent back to Teachers (Rejected)</h2>
-                    <div class="space-y-4">
+                    <div class="space-y-4 sent-back-teachers">
                     </div>
                 </div>
 
                 <div id="principal-feedback-content" class="content-panel hidden fade-in">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Principal's Feedback</h2>
                     <p class="text-gray-600 mb-6">This section shows feedback from the Principal's office regarding grievances you have forwarded.</p>
-                    <div class="space-y-4">
-                        
+                    <div class="space-y-4 principal-feedback-card-wrapper">
+<!--                         
                         <div class="bg-white p-5 rounded-xl shadow-lg">
                             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                                 <div class="flex-1 min-w-[200px]">
@@ -323,7 +323,7 @@
                                 <h4 class="font-bold mb-1">Principal's Feedback (Procedural):</h4>
                                 <p class="text-sm">"This issue has been resolved by maintenance. However, please note that infrastructure requests should first go through the internal department maintenance portal, not escalated this high. Please filter such requests in the future."</p>
                             </div>
-                        </div>
+                        </div> -->
 
                     </div>
                 </div>

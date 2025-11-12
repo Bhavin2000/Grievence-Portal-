@@ -56,7 +56,23 @@ router.get('/inbox', authenticate, async (req, res) => {
       // admins see all pending (optionally filter category)
       if (category) baseFilter.category = category;
       const list = await Complaint.find(baseFilter).populate('createdBy', 'name email role').sort({ createdAt: -1 });
-      return res.json(list);
+      
+      // Add time left for auto-approve for admin view
+      const listWithTimeLeft = list.map(complaint => {
+        const complaintObj = complaint.toObject();
+        if (complaint.responseDueAt) {
+          const now = new Date();
+          const timeLeft = complaint.responseDueAt - now;
+          complaintObj.timeLeftForAutoApprove = timeLeft > 0 ? Math.ceil(timeLeft / (1000 * 60 * 60 * 24)) : 0; // days left
+          complaintObj.isOverdue = timeLeft <= 0;
+        } else {
+          complaintObj.timeLeftForAutoApprove = null;
+          complaintObj.isOverdue = false;
+        }
+        return complaintObj;
+      });
+      
+      return res.json(listWithTimeLeft);
     }
 
     const role = req.user.role;
@@ -66,7 +82,23 @@ router.get('/inbox', authenticate, async (req, res) => {
     if (category) baseFilter.category = category;
 
     const list = await Complaint.find(baseFilter).populate('createdBy', 'name email role').sort({ createdAt: -1 });
-    res.json(list);
+    
+    // Add time left for auto-approve for role-based view
+    const listWithTimeLeft = list.map(complaint => {
+      const complaintObj = complaint.toObject();
+      if (complaint.responseDueAt) {
+        const now = new Date();
+        const timeLeft = complaint.responseDueAt - now;
+        complaintObj.timeLeftForAutoApprove = timeLeft > 0 ? Math.ceil(timeLeft / (1000 * 60 * 60 * 24)) : 0; // days left
+        complaintObj.isOverdue = timeLeft <= 0;
+      } else {
+        complaintObj.timeLeftForAutoApprove = null;
+        complaintObj.isOverdue = false;
+      }
+      return complaintObj;
+    });
+    
+    res.json(listWithTimeLeft);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -78,6 +110,205 @@ router.get('/mine', authenticate, async (req, res) => {
     try {
         const list = await Complaint.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
         res.json(list);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get complaints forwarded/approved by current user
+router.get('/forwarded-by-me', authenticate, async (req, res) => {
+    try {
+        const complaints = await Complaint.find({
+            'history.by': req.user._id,
+            'history.action': 'approved'
+        })
+        .populate('createdBy', 'name email role')
+        .populate('history.by', 'name email role')
+        .sort({ createdAt: -1 });
+
+        // Filter to only include complaints where this user actually approved
+        const filtered = complaints.filter(complaint => 
+            complaint.history.some(entry => 
+                entry.by && entry.by._id.equals(req.user._id) && entry.action === 'approved'
+            )
+        );
+
+        // Add the approval details to each complaint
+        const result = filtered.map(complaint => {
+            const approvalEntry = complaint.history.find(entry => 
+                entry.by && entry.by._id.equals(req.user._id) && entry.action === 'approved'
+            );
+
+            // Check if this was auto-approved by HOD
+            const isAutoApprovedByHod = complaint.history.some(entry => 
+                entry.action === 'auto-forwarded' && entry.role === 'hod'
+            );
+            
+            return {
+                ...complaint.toObject(),
+                myApprovalDetails: {
+                    approvedAt: approvalEntry.at,
+                    reason: approvalEntry.reason,
+                    myRole: approvalEntry.role
+                },
+                isAutoApprovedByHod: isAutoApprovedByHod
+            };
+        });
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get complaints rejected by current user
+router.get('/rejected-by-me', authenticate, async (req, res) => {
+    try {
+        const complaints = await Complaint.find({
+            'history.by': req.user._id,
+            'history.action': 'rejected'
+        })
+        .populate('createdBy', 'name email role')
+        .populate('history.by', 'name email role')
+        .sort({ createdAt: -1 });
+
+        // Filter to only include complaints where this user actually rejected
+        const filtered = complaints.filter(complaint => 
+            complaint.history.some(entry => 
+                entry.by && entry.by._id.equals(req.user._id) && entry.action === 'rejected'
+            )
+        );
+
+        // Add the rejection details to each complaint
+        const result = filtered.map(complaint => {
+            const rejectionEntry = complaint.history.find(entry => 
+                entry.by && entry.by._id.equals(req.user._id) && entry.action === 'rejected'
+            );
+            
+            return {
+                ...complaint.toObject(),
+                myRejectionDetails: {
+                    rejectedAt: rejectionEntry.at,
+                    reason: rejectionEntry.reason,
+                    myRole: rejectionEntry.role
+                }
+            };
+        });
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get complaints auto-approved by current user
+router.get('/auto-approved-by-me', authenticate, async (req, res) => {
+    try {
+        const complaints = await Complaint.find({
+            'history.by': req.user._id,
+            'history.action': 'auto-forwarded'
+        })
+        .populate('createdBy', 'name email role')
+        .populate('history.by', 'name email role')
+        .sort({ createdAt: -1 });
+
+        // Filter to only include complaints where this user actually auto-forwarded
+        const filtered = complaints.filter(complaint => 
+            complaint.history.some(entry => 
+                entry.by && entry.by._id.equals(req.user._id) && entry.action === 'auto-forwarded'
+            )
+        );
+
+        // Add the auto-approval details to each complaint
+        const result = filtered.map(complaint => {
+            const autoForwardEntry = complaint.history.find(entry => 
+                entry.by && entry.by._id.equals(req.user._id) && entry.action === 'auto-forwarded'
+            );
+            
+            return {
+                ...complaint.toObject(),
+                myAutoApprovalDetails: {
+                    autoForwardedAt: autoForwardEntry.at,
+                    reason: autoForwardEntry.reason || 'Auto-forwarded due to response deadline',
+                    myRole: autoForwardEntry.role,
+                    comment: autoForwardEntry.comment
+                }
+            };
+        });
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get complaints that were approved by current user but later rejected by next stage
+router.get('/my-approvals-later-rejected', authenticate, async (req, res) => {
+    try {
+        // Find complaints where:
+        // 1. Current user approved them
+        // 2. The complaint was later rejected
+        const complaints = await Complaint.find({
+            'history.by': req.user._id,
+            'history.action': 'approved',
+            'status': 'rejected'
+        })
+        .populate('createdBy', 'name email role')
+        .populate('history.by', 'name email role')
+        .sort({ createdAt: -1 });
+
+        // Filter and add details about both approval and rejection
+        const result = [];
+        
+        for (const complaint of complaints) {
+            // Find my approval entry
+            const myApprovalEntry = complaint.history.find(entry => 
+                entry.by && entry.by._id.equals(req.user._id) && entry.action === 'approved'
+            );
+
+            if (!myApprovalEntry) continue;
+
+            // Find the rejection entry that happened after my approval
+            const rejectionEntry = complaint.history.find(entry => 
+                entry.action === 'rejected' && entry.at > myApprovalEntry.at
+            );
+
+            if (rejectionEntry) {
+                result.push({
+                    ...complaint.toObject(),
+                    myApprovalDetails: {
+                        approvedAt: myApprovalEntry.at,
+                        reason: myApprovalEntry.reason,
+                        myRole: myApprovalEntry.role
+                    },
+                    laterRejectionDetails: {
+                        rejectedAt: rejectionEntry.at,
+                        rejectedBy: rejectionEntry.by,
+                        rejectedByRole: rejectionEntry.role,
+                        rejectedByEmail: rejectionEntry.actorEmail,
+                        rejectionReason: rejectionEntry.reason
+                    }
+                });
+            }
+        }
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.get('/raised/by-role/:role', authenticate, async (req, res) => {
+    const role = req.params.role; // 'student' or 'teacher'
+    if (!['student', 'teacher'].includes(role)) return res.status(400).json({ message: 'invalid role' });
+
+    try {
+        const list = await Complaint.find()
+            .populate('createdBy', 'role')
+            .sort({ createdAt: -1 });
+
+        const filtered = list.filter(c => c.createdBy?.role === role && c.createdBy._id.equals(req.user._id));
+        res.json(filtered);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -99,6 +330,7 @@ router.get('/:id', authenticate, async (req, res) => {
 // Approve (role-based): teacher -> hod -> principal -> done
 router.post('/:id/approve', authenticate, async (req, res) => {
     try {
+        const { reason } = req.body; // Optional reason for approval
         const complaint = await Complaint.findById(req.params.id);
         const hodDays = Number(process.env.HOD_RESPONSE_DAYS || 3);
         if (!complaint) return res.status(404).json({ message: 'Not found' });
@@ -110,13 +342,17 @@ router.post('/:id/approve', authenticate, async (req, res) => {
             (stage === 'principal' && role === 'principal');
         if (!okStage) return res.status(403).json({ message: 'You can’t approve at this stage' });
 
-        // add history with actor email
-        complaint.history.push({
+        // add history with actor email and optional reason
+        const historyEntry = {
             by: req.user._id,
             role,
             actorEmail: req.user.email,
             action: 'approved'
-        });
+        };
+        if (reason) {
+            historyEntry.reason = reason;
+        }
+        complaint.history.push(historyEntry);
 
         if (stage === 'teacher') {
             complaint.stage = 'hod';
@@ -132,10 +368,11 @@ router.post('/:id/approve', authenticate, async (req, res) => {
 
         await complaint.save();
 
-        // notify creator with who approved
+        // notify creator with who approved and optional reason
         const creator = await User.findById(complaint.createdBy);
         if (creator) {
-            creator.notifications.push({ text: `Your complaint "${complaint.title}" was approved by ${role} (${req.user.email}).` });
+            const reasonText = reason ? ` with reason: ${reason}` : '';
+            creator.notifications.push({ text: `Your complaint "${complaint.title}" was approved by ${role} (${req.user.email})${reasonText}.` });
             await creator.save();
         }
 
@@ -256,22 +493,6 @@ router.get('/:id/track', authenticate, async (req, res) => {
         if (!isCreator && !isPrivilegedRole) return res.status(403).json({ message: 'Forbidden' });
 
         res.json(c);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-router.get('/raised/by-role/:role', authenticate, async (req, res) => {
-    const role = req.params.role; // 'student' or 'teacher'
-    if (!['student', 'teacher'].includes(role)) return res.status(400).json({ message: 'invalid role' });
-
-    try {
-        const list = await Complaint.find()
-            .populate('createdBy', 'role')
-            .sort({ createdAt: -1 });
-
-        const filtered = list.filter(c => c.createdBy?.role === role && c.createdBy._id.equals(req.user._id));
-        res.json(filtered);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
