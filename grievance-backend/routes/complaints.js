@@ -57,7 +57,7 @@ router.get('/inbox', authenticate, async (req, res) => {
       if (category) baseFilter.category = category;
       const list = await Complaint.find(baseFilter).populate('createdBy', 'name email role').sort({ createdAt: -1 });
       
-      // Add time left for auto-approve for admin view
+      // Add time left for auto-approve and reasons for admin view
       const listWithTimeLeft = list.map(complaint => {
         const complaintObj = complaint.toObject();
         if (complaint.responseDueAt) {
@@ -69,6 +69,22 @@ router.get('/inbox', authenticate, async (req, res) => {
           complaintObj.timeLeftForAutoApprove = null;
           complaintObj.isOverdue = false;
         }
+
+        // Add approval/rejection reasons by role from history
+        const approvalReasons = {};
+        const rejectionReasons = {};
+        
+        complaint.history.forEach(entry => {
+          if (entry.action === 'approved' && entry.role) {
+            approvalReasons[entry.role] = entry.reason || null;
+          } else if (entry.action === 'rejected' && entry.role) {
+            rejectionReasons[entry.role] = entry.reason || null;
+          }
+        });
+        
+        complaintObj.approvalReasons = Object.keys(approvalReasons).length > 0 ? approvalReasons : null;
+        complaintObj.rejectionReasons = Object.keys(rejectionReasons).length > 0 ? rejectionReasons : null;
+
         return complaintObj;
       });
       
@@ -83,7 +99,7 @@ router.get('/inbox', authenticate, async (req, res) => {
 
     const list = await Complaint.find(baseFilter).populate('createdBy', 'name email role').sort({ createdAt: -1 });
     
-    // Add time left for auto-approve for role-based view
+    // Add time left for auto-approve and reasons for role-based view
     const listWithTimeLeft = list.map(complaint => {
       const complaintObj = complaint.toObject();
       if (complaint.responseDueAt) {
@@ -95,6 +111,22 @@ router.get('/inbox', authenticate, async (req, res) => {
         complaintObj.timeLeftForAutoApprove = null;
         complaintObj.isOverdue = false;
       }
+
+      // Add approval/rejection reasons by role from history
+      const approvalReasons = {};
+      const rejectionReasons = {};
+      
+      complaint.history.forEach(entry => {
+        if (entry.action === 'approved' && entry.role) {
+          approvalReasons[entry.role] = entry.reason || null;
+        } else if (entry.action === 'rejected' && entry.role) {
+          rejectionReasons[entry.role] = entry.reason || null;
+        }
+      });
+      
+      complaintObj.approvalReasons = Object.keys(approvalReasons).length > 0 ? approvalReasons : null;
+      complaintObj.rejectionReasons = Object.keys(rejectionReasons).length > 0 ? rejectionReasons : null;
+
       return complaintObj;
     });
     
@@ -143,14 +175,24 @@ router.get('/forwarded-by-me', authenticate, async (req, res) => {
             const isAutoApprovedByHod = complaint.history.some(entry => 
                 entry.action === 'auto-forwarded' && entry.role === 'hod'
             );
+
+            // Add approval/rejection reasons by role from history
+            const complaintObj = complaint.toObject();
+            const approvalReasons = {};
+            const rejectionReasons = {};
+            
+            complaint.history.forEach(entry => {
+              if (entry.action === 'approved' && entry.role) {
+                approvalReasons[entry.role] = entry.reason || null;
+              } else if (entry.action === 'rejected' && entry.role) {
+                rejectionReasons[entry.role] = entry.reason || null;
+              }
+            });
             
             return {
-                ...complaint.toObject(),
-                myApprovalDetails: {
-                    approvedAt: approvalEntry.at,
-                    reason: approvalEntry.reason,
-                    myRole: approvalEntry.role
-                },
+                ...complaintObj,
+                approvalReasons: Object.keys(approvalReasons).length > 0 ? approvalReasons : null,
+                rejectionReasons: Object.keys(rejectionReasons).length > 0 ? rejectionReasons : null,
                 isAutoApprovedByHod: isAutoApprovedByHod
             };
         });
@@ -184,14 +226,29 @@ router.get('/rejected-by-me', authenticate, async (req, res) => {
             const rejectionEntry = complaint.history.find(entry => 
                 entry.by && entry.by._id.equals(req.user._id) && entry.action === 'rejected'
             );
+
+            // Add approval/rejection reasons by role from history
+            const complaintObj = complaint.toObject();
+            const approvalReasons = {};
+            const rejectionReasons = {};
+            
+            complaint.history.forEach(entry => {
+              if (entry.action === 'approved' && entry.role) {
+                approvalReasons[entry.role] = entry.reason || null;
+              } else if (entry.action === 'rejected' && entry.role) {
+                rejectionReasons[entry.role] = entry.reason || null;
+              }
+            });
             
             return {
-                ...complaint.toObject(),
+                ...complaintObj,
                 myRejectionDetails: {
                     rejectedAt: rejectionEntry.at,
                     reason: rejectionEntry.reason,
                     myRole: rejectionEntry.role
-                }
+                },
+                approvalReasons: Object.keys(approvalReasons).length > 0 ? approvalReasons : null,
+                rejectionReasons: Object.keys(rejectionReasons).length > 0 ? rejectionReasons : null
             };
         });
 
