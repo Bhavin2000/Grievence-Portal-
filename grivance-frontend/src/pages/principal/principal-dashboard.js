@@ -1,6 +1,7 @@
-const { showToast } = require("../../shared/common-dom/common-dom");
-const { getInboxComplaints, getComplaintsAutoApprovedByMe, getComplaintsForwardedByMe, getComplaintsRejectedByMe } = require("../../shared/utils/api");
-const { principalModalManager, moveCardToProcessed, showPrincipalInbox } = require("./helper");
+
+import {showPrincipalInbox, showPrincipalProcessed } from "./helper";
+import "../../shared/common.js";
+
 
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -21,4 +22,5 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
     showPrincipalInbox();
+    showPrincipalProcessed();
 });

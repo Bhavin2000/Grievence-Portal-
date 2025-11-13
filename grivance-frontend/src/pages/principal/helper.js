@@ -72,7 +72,7 @@ export const principalModalManager = createPrincipalModalManager();
 // --- Move Card to Processed History ---
 export function moveCardToProcessed(cardElement, finalStatus, principalFeedback, cardId) {
     const processedList = document.getElementById('processed-list');
-    document.getElementById('empty-processed-message').classList.add('hidden');
+    document.getElementById('empty-processed-message')?.classList.add('hidden');
 
     // Clone the card
     const processedCard = cardElement.cloneNode(true);
@@ -138,11 +138,23 @@ export async function showPrincipalInbox() {
     buttonHandlerForModal();
     submitReviewPrincipal();
 
-    const approved = await getComplaintsForwardedByMe();
-
-    const rejected = await getComplaintsRejectedByMe();
-
 }
+
+export async function showPrincipalProcessed() {
+    const processedListWrapper = document.querySelector('.principal-Processed-complaints');
+    processedListWrapper.innerHTML = '';
+    const approved = await getComplaintsForwardedByMe();
+    const rejected = await getComplaintsRejectedByMe();
+    approved.forEach(complaint => {
+        const card = processedComplaintCardApproved(complaint);
+        processedListWrapper.insertAdjacentHTML('beforeend', card);
+    });
+    rejected.forEach(complaint => {
+        const card = processedComplaintCardRejected(complaint);
+        processedListWrapper.insertAdjacentHTML('beforeend', card);
+    }); 
+}
+
 
 export function submitReviewPrincipal() {
     principalModalManager.getForm().addEventListener('submit', (e) => {
