@@ -1,21 +1,32 @@
 
 // Import utility modules
-import { getComplaints, updateComplaint, deleteComplaint } from '../../shared/utils/api.js';
+import { getComplaints, updateComplaint, deleteComplaint, getAdminStats } from '../../shared/utils/api.js';
 import { redirectIfNotAuthenticated, getUserRole, logout } from '../../shared/utils/auth.js';
 import { showNotification, formatDate, addEventListeners } from '../../shared/utils/dom.js';
 import { setupNavigation, showLoading, hideLoading, handleError } from '../../shared/common.js';
 
 // Check if user is authenticated and has admin role
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const totalPending = document.getElementById('total-pending');
+    const totalApproved = document.getElementById('total-approved');
+    const totalRejected = document.getElementById('total-rejected');
+    const totalSubmit = document.getElementById('total-submited');
+
+    const stats = await getAdminStats();
+    totalPending.innerText = stats.pending;
+    totalApproved.innerText = stats.approved;
+    totalRejected.innerText = stats.rejected;
+    totalSubmit.innerText = stats.total;
+
     redirectIfNotAuthenticated();
-    
+
     const userRole = getUserRole();
     if (userRole !== 'admin') {
         showNotification('Access denied. Admin privileges required.', 'danger');
         setTimeout(() => window.location.href = '/login.html', 2000);
         return;
     }
-    
+
     initializeAdminPortal();
 });
 
@@ -32,7 +43,7 @@ function setupTabNavigation() {
     const contentPanels = document.querySelectorAll('.content-panel');
 
     sidebarLinks.forEach(link => {
-        link.addEventListener('click', function(event) {
+        link.addEventListener('click', function (event) {
             event.preventDefault();
             const targetId = this.getAttribute('data-target');
             // Hide all panels
@@ -117,14 +128,14 @@ function showToast(message, bgColor) {
     const toast = document.getElementById('toast-notification');
     const toastMessage = document.getElementById('toast-message');
     if (!toast || !toastMessage) return; // Guard clause
-    
+
     toastMessage.textContent = message;
     toast.classList.remove('bg-green-500', 'bg-red-500', 'bg-blue-500', 'bg-slate-500');
     toast.classList.add(bgColor);
-    
+
     toast.classList.remove('hidden', 'opacity-0', '-translate-y-10');
     toast.classList.add('opacity-100', 'translate-y-0');
-    
+
     setTimeout(() => {
         toast.classList.remove('opacity-100', 'translate-y-0');
         toast.classList.add('opacity-0', '-translate-y-10');

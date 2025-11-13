@@ -111,3 +111,11 @@ export const getComplaintsRaisedByRole = async (role) => {
     }
     return apiRequest(`/complaints/raised/by-role/${role}`);
 };
+
+export const getAdminStats = async () => {
+    return apiRequest('/admin/stats');
+};
+
+export const getAdminComplaints = async (page = 1, per = 50) => {
+    return apiRequest(`/admin/complaints?page=${page}&per=${per}`);
+};
