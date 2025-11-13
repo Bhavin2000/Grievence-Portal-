@@ -131,9 +131,9 @@ module.exports = (env, argv) => {
         minify: isProduction
       }),
       new HtmlWebpackPlugin({
-        template: './src/pages/common/landing-page.html',
+        template: './src/pages/auth/login.html',
         filename: 'index.html',
-        chunks: ['landing-page'],
+        chunks: ['login'],
         minify: isProduction
       }),
 

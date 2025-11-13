@@ -16,11 +16,12 @@ export async function loadExistingComplaints() {
 
         // Separate complaints into active and completed
         const activeComplaints = complaints.filter(complaint =>
-            complaint.status !== 'resolved' && complaint.status !== 'rejected'
+            complaint.status === 'pending'
         );
         const completedComplaints = complaints.filter(complaint =>
-            complaint.status === 'resolved' || complaint.status === 'rejected'
+            complaint.status !== 'pending'
         );
+        console.log(completedComplaints)
 
         // Add active complaints to tracking list
         activeComplaints.forEach(complaint => {
@@ -56,7 +57,7 @@ export async function loadExistingComplaints() {
 
 export function addGrievanceToStudentTracker(complaintData) {
     // If complaint is resolved or rejected, add to history instead
-    if (complaintData.status === 'resolved' || complaintData.status === 'rejected') {
+    if (complaintData.status === 'approved' || complaintData.status === 'rejected') {
         addToHistory(complaintData);
         return;
     }
@@ -229,8 +230,8 @@ export function addToHistory(complaintData) {
     card.className = "bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm";
 
     const status = complaintData.status;
-    const statusClass = status === 'resolved' ? 'text-green-600' : 'text-red-600';
-    const statusText = status === 'resolved' ? 'Resolved' : 'Denied';
+    const statusClass = status === 'approved' ? 'text-green-600' : 'text-red-600';
+    const statusText = status === 'approved' ? 'Approved' : 'Denied';
 
     card.innerHTML = `
             <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
@@ -400,7 +401,6 @@ export async function showTeacherInbox() {
     const inbox = await getInboxComplaints();
     console.log('Inbox Complaints:', inbox);
     const InboxWrapper = document.querySelector('.grievance-card-wrapper');
-    if (!inbox.length) return;
     InboxWrapper.innerHTML = '';
     inbox.forEach(item => {
         const card = GrievanceInboxCardDom(item);

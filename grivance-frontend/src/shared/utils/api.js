@@ -119,3 +119,28 @@ export const getAdminStats = async () => {
 export const getAdminComplaints = async (page = 1, per = 50) => {
     return apiRequest(`/admin/complaints?page=${page}&per=${per}`);
 };
+
+// Get complaints created by teachers
+export const getComplaintsByTeachers = async () => {
+    return apiRequest('/admin/complaints/by-teachers');
+};
+
+// Get complaints created by students
+export const getComplaintsByStudents = async () => {
+    return apiRequest('/admin/complaints/by-students');
+};
+
+// Get all pending complaints
+export const getAllPendingComplaints = async () => {
+    return apiRequest('/admin/complaints/pending');
+};
+
+// Get all completed complaints (approved + rejected)
+export const getAllCompletedComplaints = async () => {
+    return apiRequest('/admin/complaints/completed');
+};
+
+// Get recently active complaints (latest 3)
+export const getRecentActivityComplaints = async () => {
+    return apiRequest('/admin/complaints/recent-activity');
+};
