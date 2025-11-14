@@ -13,7 +13,7 @@ function initializeRegisterPage() {
     // setupPasswordConfirmation();
 }
 
-function setupRegisterForm() {
+export function setupRegisterForm() {
     const registerForm = document.getElementById('register-form') || document.querySelector('form');
     
     if (registerForm) {
@@ -43,7 +43,7 @@ function validatePasswordMatch() {
     return true;
 }
 
-async function handleRegister(e) {
+export async function handleRegister(e) {
     e.preventDefault();
     
     const formData = getFormData('form');

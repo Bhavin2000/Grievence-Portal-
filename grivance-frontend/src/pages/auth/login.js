@@ -1,5 +1,6 @@
 // Login page functionality
 import { getToken, login, saveToken } from '../../shared/utils/auth.js';
+import "../../shared/common.js";
 import { validateForm, displayFormErrors, clearFormErrors } from '../../shared/utils/validation.js';
 import { getFormData, showNotification } from '../../shared/utils/dom.js';
 
