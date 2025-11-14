@@ -1,10 +1,12 @@
 ﻿
 import "../../shared/common.js"; // Import common functionality
-import { handleGrievanceFormSubmit, loadExistingComplaints, showTeacherInbox } from "../../shared/common-dom/common-dom";
+import { emptyState, handleGrievanceFormSubmit, loadExistingComplaints, showTeacherInbox } from "../../shared/common-dom/common-dom";
+import { getComplaintsForwardedByMe } from "../../shared/utils/api.js";
+import { feedbackCardDom } from "./helper.js";
 
 
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     // --- Tab Navigation Logic ---
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
     const contentPanels = document.querySelectorAll('.content-panel');
@@ -34,37 +36,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-        // --- Teacher Grievance Form Submission ---
+    // --- Teacher Grievance Form Submission ---
     loadExistingComplaints();
 
     grievanceForm?.addEventListener('submit', handleGrievanceFormSubmit);
 
     showTeacherInbox();
-
-    // --- Grievance Handling Logic ---
-    function handleGrievance(button, action) {
-        const card = button.closest('.grievance-card');
-        const actionButtons = card.querySelector('.action-buttons');
-        let message = '';
-        let toastBg = '';
-
-        // This is a simulation. In a real app, you'd call an API.
-        if (action === 'approved') {
-            message = 'Grievance approved and forwarded to HOD.';
-            toastBg = 'bg-green-500';
-            actionButtons.innerHTML = `<span class="px-4 py-2 bg-green-200 text-green-800 rounded-full text-sm font-bold">Forwarded to HOD</span>`;
-        } else if (action === 'denied') {
-            message = 'Grievance has been rejected.';
-            toastBg = 'bg-red-500';
-            actionButtons.innerHTML = `<span class="px-4 py-2 bg-red-200 text-red-800 rounded-full text-sm font-bold">Rejected</span>`;
-        }
-
-        // Show toast notification
-        showToast(message, toastBg);
-
-        // Make the card look processed
-        card.classList.add('opacity-70', 'bg-gray-50');
+    const forwardedByMe = await getComplaintsForwardedByMe();
+    console.log('forwardedByMe:', forwardedByMe);
+    const forwardedContainer = document.getElementById('forwarded-by-me-list');
+    forwardedContainer.innerHTML = '';
+    if (forwardedByMe.length) {
+        forwardedByMe.forEach(complaint => {
+            if (complaint.status !== 'pending') {
+                forwardedContainer.innerHTML += feedbackCardDom(complaint);
+            }
+        })
+    } else {
+        forwardedContainer.innerHTML = emptyState('No grievances forwarded by you');
     }
+
+
+
 
     // --- Custom Toast Notification ---
     function showToast(message, bgColor) {
@@ -106,5 +99,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     // --- **** END OF NEW LOGIC **** ---
 
-    
+
 })

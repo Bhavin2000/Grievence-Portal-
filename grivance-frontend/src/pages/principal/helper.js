@@ -1,4 +1,4 @@
-import { showToast } from "../../shared/common-dom/common-dom";
+import { emptyState, showToast } from "../../shared/common-dom/common-dom";
 import { approveComplaint, getComplaintsForwardedByMe, getComplaintsRejectedByMe, getInboxComplaints, rejectComplaint } from "../../shared/utils/api";
 
 function createPrincipalModalManager() {
@@ -127,9 +127,12 @@ export function moveCardToProcessed(cardElement, finalStatus, principalFeedback,
 export async function showPrincipalInbox() {
     const inbox = await getInboxComplaints();
     const InboxWrapper = document.querySelector('#pending-list');
-    if (!inbox.length) return;
 
     InboxWrapper.innerHTML = '';
+    if(!inbox.length){
+        InboxWrapper.innerHTML = emptyState('No pending grievances in your inbox.');
+        return;
+    }
     inbox.forEach(item => {
         const card = GrievanceInboxCardDom(item);
         InboxWrapper.insertAdjacentHTML('beforeend', card);
@@ -142,9 +145,16 @@ export async function showPrincipalInbox() {
 
 export async function showPrincipalProcessed() {
     const processedListWrapper = document.querySelector('.principal-Processed-complaints');
+    const emptymsg = document.getElementById('empty-processed-message');
     processedListWrapper.innerHTML = '';
     const approved = await getComplaintsForwardedByMe();
     const rejected = await getComplaintsRejectedByMe();
+    
+    if (!approved && !rejected) {
+        emptymsg.classList.remove('hidden');
+        return;
+    }
+    emptymsg.classList.add('hidden');
     approved.forEach(complaint => {
         const card = processedComplaintCardApproved(complaint);
         processedListWrapper.insertAdjacentHTML('beforeend', card);
@@ -152,7 +162,7 @@ export async function showPrincipalProcessed() {
     rejected.forEach(complaint => {
         const card = processedComplaintCardRejected(complaint);
         processedListWrapper.insertAdjacentHTML('beforeend', card);
-    }); 
+    });
 }
 
 
@@ -244,7 +254,7 @@ export function processedComplaintCardApproved(complaint) {
             <div class="flex-1 min-w-[200px]">
                 <div class="flex items-center gap-3 mb-1">
                     <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">${complaint.category}</span>
-                    <span class="text-gray-500 text-sm">from: Bob Teacher (bob@teacher.edu)</span>
+                    <span class="text-gray-500 text-sm">from: ${complaint.createdBy.name} (${complaint.createdBy.email})</span>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900">${complaint.title}</h3>
                 <p class="text-gray-600 text-sm mt-1">"${complaint.description}"</p>

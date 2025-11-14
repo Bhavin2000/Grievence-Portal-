@@ -3,51 +3,22 @@ import { getUserRole } from "../utils/auth.js";
 
 export async function loadExistingComplaints() {
     try {
-        // Use getMyComplaints() which already filters by authenticated user
         const role = getUserRole();
+        console.log('User Role:', role);
 
         const complaints = await getMyComplaints();
-        if (role === 'teacher') {
-            complaints.forEach(complaint => {
-                addGrievanceToTeacherTracker(complaint);
-            });
-            return;
-        }
-
-        // Separate complaints into active and completed
-        const activeComplaints = complaints.filter(complaint =>
-            complaint.status === 'pending'
-        );
-        const completedComplaints = complaints.filter(complaint =>
-            complaint.status !== 'pending'
-        );
-        console.log(completedComplaints)
-
-        // Add active complaints to tracking list
-        activeComplaints.forEach(complaint => {
-            addGrievanceToStudentTracker(complaint);
-        });
-
-        // Add completed complaints to history
-        completedComplaints.forEach(complaint => {
-            addToHistory(complaint);
-        });
-
-        // Show empty messages if needed
-        if (activeComplaints.length === 0) {
-            const emptyMessage = document.getElementById('empty-tracking-message');
-            if (emptyMessage) {
-                emptyMessage.classList.remove('hidden');
+        console.log('Existing Complaints:', complaints);
+        document.getElementById('empty-history-message')?.classList.remove('hidden');
+        document.getElementById('empty-tracking-message')?.classList.remove('hidden');
+        complaints.forEach(complaint => {
+            if (complaint.status !== 'pending') {
+                addToHistory(complaint);
+            } else {
+                role === 'teacher' ?
+                    addGrievanceToTeacherTracker(complaint)
+                    : addGrievanceToStudentTracker(complaint);
             }
-        }
-
-        if (completedComplaints.length === 0) {
-            const emptyHistoryMessage = document.getElementById('empty-history-message');
-            if (emptyHistoryMessage) {
-                emptyHistoryMessage.classList.remove('hidden');
-            }
-        }
-
+        });
     } catch (error) {
         console.error('Error loading existing complaints:', error);
         showToast('Failed to load existing complaints.', 'bg-red-500');
@@ -56,14 +27,8 @@ export async function loadExistingComplaints() {
 
 
 export function addGrievanceToStudentTracker(complaintData) {
-    // If complaint is resolved or rejected, add to history instead
-    if (complaintData.status === 'approved' || complaintData.status === 'rejected') {
-        addToHistory(complaintData);
-        return;
-    }
-
     const trackingList = document.getElementById('grievance-tracking-list');
-    document.getElementById('empty-tracking-message').classList.add('hidden');
+    document.getElementById('empty-tracking-message')?.classList.add('hidden');
 
     // Extract data from API response
     const trackingId = complaintData._id;
@@ -101,7 +66,7 @@ export function addGrievanceToStudentTracker(complaintData) {
 
 export function addGrievanceToTeacherTracker(complaintData) {
     const trackingList = document.getElementById('grievance-tracking-list');
-    const emptyMessage = document.getElementById('empty-tracking-message');
+    document.getElementById('empty-tracking-message')?.classList.add('hidden');
 
     const trackingId = complaintData._id;
     const category = complaintData.category;
@@ -111,10 +76,6 @@ export function addGrievanceToTeacherTracker(complaintData) {
     const stage = complaintData.stage;
     const submissionDate = new Date(complaintData.createdAt).toLocaleDateString();
 
-    // Hide the empty message
-    if (emptyMessage) {
-        emptyMessage.classList.add('hidden');
-    }
 
     // Map stage to display status for teacher view
     const getDisplayStatus = (stage, status) => {
@@ -214,9 +175,7 @@ function generateTeacherTrackerHTML(category, title, description, displayStatus,
 
         <div class="flex flex-wrap justify-between items-center text-sm text-gray-500 gap-x-4 pt-4 border-t border-gray-200">
             <span>Tracking ID: #${trackingId}</span>
-            <span>Submitted on: ${submissionDate}</span>
-            <button class="bg-gray-200 text-gray-800 py-1 px-3 rounded-lg font-semibold hover:bg-gray-300 transition-all text-xs" onclick="updateGrievanceStatus(this)">Check Status</button>
-        </div>
+            <span>Submitted on: ${submissionDate}</span> </div>
     `;
 }
 
@@ -330,8 +289,7 @@ export function generateTrackerHTML(category, title, description, displayStatus,
             <div class="flex flex-wrap justify-between items-center text-sm text-gray-500 gap-x-4 pt-4 border-t border-gray-200">
                 <span>Tracking ID: #${trackingId}</span>
                 <span>Submitted on: ${createdAt}</span>
-                <button class="bg-gray-200 text-gray-800 py-1 px-3 rounded-lg font-semibold hover:bg-gray-300 transition-all text-xs" onclick="updateGrievanceStatus(this)">Check Status</button>
-            </div>
+                   </div>
         `;
 }
 

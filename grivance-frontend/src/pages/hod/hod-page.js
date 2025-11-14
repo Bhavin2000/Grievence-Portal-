@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const forwardedContainer = document.querySelector('.forwarded-principal');
     const principalFeedbackContainer = document.querySelector('.principal-feedback-card-wrapper');
     forwardedContainer.innerHTML = '';
+    console.log(approvedcomplaints)
     approvedcomplaints.forEach(complaint => {
         if (complaint.status === 'pending') {
             forwardedContainer.innerHTML += forwardedComplaintCard(complaint);
@@ -89,7 +90,7 @@ export function principalFeedbackCard(complaint) {
         </div>
         <div class="${complaint.status === 'approved' ? 'bg-green-50 border-l-4 border-green-500 text-green-800' : 'bg-red-50 border-l-4 border-red-500 text-red-800'} p-4 rounded-md">
             <h4 class="font-bold mb-1">Principal's Feedback (Helpful):</h4>
-            <p class="text-sm">${complaint?.principalFeedback}</p>
+            <p class="text-sm">${complaint?.approvalReasons?.principal || complaint?.rejectionReasons?.principal}</p>
         </div>
     </div>`
 }

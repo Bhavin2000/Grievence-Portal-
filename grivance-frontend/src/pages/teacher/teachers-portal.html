@@ -63,6 +63,14 @@
                         <span>Track Your Complaint</span>
                     </a>
                 </li>
+                 <li>
+                    <a href="#completed-complaints" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="completed-complaints-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        <span>Completed Complaints</span>
+                    </a>
+                </li>
                 <li>
                     <a href="#hod-feedback" class="sidebar-link flex items-center gap-3 p-3 rounded-lg hover:bg-blue-700 transition-colors" data-target="hod-feedback-content">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -197,10 +205,26 @@
                         </div>
                     </div>
                 </div>
+                 <div id="completed-complaints-content" class="content-panel hidden fade-in">
+                    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-4xl mx-auto"> <h2 class="text-2xl font-semibold text-gray-800 mb-6">Your Completed Complaints</h2>
+                        <div class="space-y-4">
+                            <div id="empty-history-message" class="text-center text-gray-500 py-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0l.621 6.21m15.258-6.21l-.621 6.21m-14.016 0h12.774" />
+                                </svg>
+                                <p class="mt-2 text-lg">You have not submitted any grievances yet.</p>
+                                <p class="text-sm">When you submit a grievance, you can track its status here.</p>
+                            </div>
+
+                            <div id="grievance-history-list" class="space-y-4">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="hod-feedback-content" class="content-panel hidden fade-in">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">HOD's Feedback</h2>
                     <p class="text-gray-600 mb-6">This section shows grievances that you approved, but were declined by the HOD. Please review the feedback and take appropriate action.</p>
-                    <div class="space-y-4">
+                    <div class="space-y-4 " id="forwarded-by-me-list">
                         <div class="grievance-card bg-white p-5 rounded-xl shadow-lg">
                             <div class="flex flex-wrap items-center justify-between gap-4 mb-3">
                                 <div class="flex-1 min-w-[200px]">
