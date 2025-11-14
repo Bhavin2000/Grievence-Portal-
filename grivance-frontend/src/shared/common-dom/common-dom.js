@@ -402,6 +402,10 @@ export async function showTeacherInbox() {
     console.log('Inbox Complaints:', inbox);
     const InboxWrapper = document.querySelector('.grievance-card-wrapper');
     InboxWrapper.innerHTML = '';
+    if (!inbox.length) {
+        InboxWrapper.innerHTML = emptyState('No complaints found for teacher');
+        return;
+    }
     inbox.forEach(item => {
         const card = GrievanceInboxCardDom(item);
         InboxWrapper.insertAdjacentHTML('beforeend', card);
@@ -673,4 +677,14 @@ function handleGrievance(button) {
 
     // Make the card look processed
     card.classList.add('opacity-70', 'bg-gray-50');
+}
+
+export function emptyState(message = 'No items found') {
+    return `
+    <div id="empty-processed-message" class="text-center text-gray-500 py-10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l.625 6.25m7.5-6.25l-.625 6.25M12 16.875v-6.75M12 7.5h.008v.008H12V7.5z"></path>
+        </svg>
+        <p class="mt-2 text-lg">${message}</p>
+    </div>`;
 }

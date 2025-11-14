@@ -4,19 +4,43 @@ export async function initializeAdminPortal() {
     setupTabNavigation();
     const recentlyActiveComplaints = await getRecentActivityComplaints();
     const recentActivityContainer = document.getElementById('recent-complaints-activity');
-    recentActivityContainer.innerHTML = recentlyActiveComplaints.map(complaint => recentActivityCard(complaint)).join('');
+    if (!recentlyActiveComplaints.length) {
+        recentActivityContainer.innerHTML = emptyState('No recent activity found');
+    } else {
+        recentActivityContainer.innerHTML = recentlyActiveComplaints.map(complaint => recentActivityCard(complaint)).join('');
+    }
+    
     const studentsComplaintsContainer = document.getElementById('student-list');
     const studentsComplaints = await getComplaintsByStudents();
-    studentsComplaintsContainer.innerHTML = studentsComplaints.map(complaint => complaintCard(complaint)).join('');
+    if (!studentsComplaints.length) {
+        studentsComplaintsContainer.innerHTML = emptyState('No complaints from students');
+    } else {
+        studentsComplaintsContainer.innerHTML = studentsComplaints.map(complaint => complaintCard(complaint)).join('');
+    }
+    
     const TeachercomplaintList = document.getElementById('teacher-list');
     const teachersComplaints = await getComplaintsByTeachers();
-    TeachercomplaintList.innerHTML = teachersComplaints.map(complaint => complaintCard(complaint)).join('');
+    if (!teachersComplaints.length) {
+        TeachercomplaintList.innerHTML = emptyState('No complaints from teachers');
+    } else {
+        TeachercomplaintList.innerHTML = teachersComplaints.map(complaint => complaintCard(complaint)).join('');
+    }
+    
     const pendingComplaintsList = document.getElementById('pending-list-all');
     const pendingComplaints = await getAllPendingComplaints();
-    pendingComplaintsList.innerHTML = pendingComplaints.map(complaint => complaintCard(complaint)).join('');
+    if (!pendingComplaints.length) {
+        pendingComplaintsList.innerHTML = emptyState('No pending complaints');
+    } else {
+        pendingComplaintsList.innerHTML = pendingComplaints.map(complaint => complaintCard(complaint)).join('');
+    }
+    
     const completedComplaintsList = document.getElementById('completed-list-all');
     const completedComplaints = await getAllCompletedComplaints();
-    completedComplaintsList.innerHTML = completedComplaints.map(complaint => complaintCard(complaint)).join('');
+    if (!completedComplaints.length) {
+        completedComplaintsList.innerHTML = emptyState('No completed complaints');
+    } else {
+        completedComplaintsList.innerHTML = completedComplaints.map(complaint => complaintCard(complaint)).join('');
+    }
 }
 
 export function setupTabNavigation() {
@@ -101,4 +125,21 @@ export function complaintCard(complaint) {
         </div>
     </div>`;
 }
+
+export function emptyState(message = 'No items found') {
+    return `
+    <div class="text-center py-12">
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <div>
+                <h3 class="text-lg font-medium text-gray-900">${message}</h3>
+                <p class="mt-1 text-sm text-gray-500">Check back later or try refreshing the page.</p>
+            </div>
+        </div>
+    </div>`;
+}
+
+
 
