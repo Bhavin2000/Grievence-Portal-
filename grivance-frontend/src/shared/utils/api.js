@@ -14,12 +14,14 @@ export const apiRequest = async (endpoint, options = {}) => {
 
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // Throw error with the message from the API response
+            throw new Error(data.message || `HTTP error! status: ${response.status}`);
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
         console.error('API request failed:', error);
         throw error;

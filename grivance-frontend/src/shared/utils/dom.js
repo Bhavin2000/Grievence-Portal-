@@ -84,18 +84,48 @@ export const setFormData = (formSelector, data) => {
 };
 
 export const showNotification = (message, type = 'info') => {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = createElement('div', {
+            id: 'toast-container',
+            className: 'fixed top-5 right-5 z-50 space-y-2'
+        });
+        document.body.appendChild(toastContainer);
+    }
+
+    // Map types to Tailwind colors
+    const colorMap = {
+        success: 'bg-green-500',
+        danger: 'bg-red-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+    };
+
+    const bgColor = colorMap[type] || colorMap.info;
+
     const notification = createElement('div', {
-        className: `alert alert-${type} notification`,
-        role: 'alert'
+        className: `${bgColor} text-white py-3 px-6 rounded-lg shadow-xl transition-all duration-300 transform`
     }, message);
 
-    document.body.appendChild(notification);
+    toastContainer.appendChild(notification);
+
+    // Animate in
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    }, 10);
 
     // Auto remove after 3 seconds
     setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
     }, 3000);
 };
 

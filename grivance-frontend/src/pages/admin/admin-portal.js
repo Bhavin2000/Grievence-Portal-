@@ -5,8 +5,6 @@ import "../../shared/common.js";
 import { getFormData, showNotification } from '../../shared/utils/dom.js';
 import { hideLoading, showLoading } from '../../shared/common.js';
 import { register } from '../../shared/utils/auth.js';
-import { handleRegister } from '../auth/register.js';
-import { validateForm } from '../../shared/utils/validation.js';
 
 
 // Check if user is authenticated and has admin role
@@ -32,8 +30,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { confirmPassword, confirm_password, ...registrationData } = formData;
 
             const response = await register(registrationData);
-
-            showNotification('Registration successful! Please login with your credentials.', 'success');
+            
+            showNotification(response.message, 'success');
+            console.log('response message:', response.message);
+            
+            // Reset form on success
+            document.getElementById('register-form').reset();
 
         } catch (error) {
             console.error('Registration error:', error);
